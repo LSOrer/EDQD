@@ -1,15 +1,18 @@
-# EDQD
-Event Data Quality Dashboard
+# EDQD - Event Data Quality Dashboard
 
-
-Prerequisits:
+## Prerequisits:
 
 Python 3
+
 Anaconda - Jupyter Notebook
 
-Libraries:
+##### Libraries:
 
 pandas
+
 NumPy
+
+graphviz
+
 PM4PY (https://stackoverflow.com/questions/60798202/no-module-named-pm4py)
 
