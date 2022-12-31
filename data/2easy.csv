@@ -1,0 +1,9 @@
+﻿case_id,event,timestamp,resource
+1,A,2022-01-01,clerk
+1,B,2022-01-02,robot
+1,C,2022-01-02,robot
+1,D,2022-01-03,manager
+2,A,2022-01-03,clerk
+2,C,2022-01-04,robot
+2,B,2022-01-04,robot
+2,D,2022-01-05,manager
