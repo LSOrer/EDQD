@@ -4,7 +4,7 @@
 
 Python 3
 
-Anaconda - Jupyter Notebook
+Jupyter Notebook (Anaconda, VSC extension)
 
 ##### Libraries:
 
