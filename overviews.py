@@ -48,3 +48,15 @@ def maximum_value(df):
     return largest
 
 #print(maximum_value(df))
+
+def n_largest(df,col,n):
+    nlargest = df.nlargest(n,col)
+    return nlargest
+
+#print(n_largest(df,'event',3))
+
+def n_smallest(df,col,n):
+    nsmallest = df.nsmallest(n,col)
+    return nsmallest
+
+#print(n_smallest(df,'event',3))

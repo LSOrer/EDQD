@@ -16,6 +16,3 @@ def all_values_lowercase(df):
 
 #print(all_values_lowercase(df))
 
-
-
-#print(df)
