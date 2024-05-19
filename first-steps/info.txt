@@ -1,0 +1,2 @@
+In this folder we set aside the first considerations and thought about frameworks and how we will set up things. 
+Just history in here, nothing special.
