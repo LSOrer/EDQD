@@ -1,12 +1,12 @@
-# EDQD - Event Data Quality Dashboard
+# The Event Data Quality Dashboard (EDQD)
 
 ## Prerequisits:
 
 Python 3
 
-Jupyter Notebook (Anaconda, VSC extension)
-
 ##### Libraries:
+
+flask
 
 pandas
 
