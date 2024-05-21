@@ -6,15 +6,11 @@ Python 3
 
 ##### Libraries:
 
-flask
-
-pandas
-
-NumPy
-
-graphviz
-
-PM4PY (https://stackoverflow.com/questions/60798202/no-module-named-pm4py)
+- flask
+- pandas
+- NumPy
+- graphviz
+- pm4py
 
 
 ## Running the code
