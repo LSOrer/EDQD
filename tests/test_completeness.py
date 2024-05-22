@@ -15,18 +15,18 @@ class TestCompleteness(unittest.TestCase):
         self.log = EventLog()
 
         # Create a complete trace
-        trace1 = Trace()
-        event1 = Event({'concept:name': 'Start', 'lifecycle:transition': 'complete', 'org:resource': 'User1'})
-        event2 = Event({'concept:name': 'End', 'lifecycle:transition': 'complete', 'org:resource': 'User2'})
+        trace1 = Trace({})
+        event1 = Event({'concept:name': 'Check-in table', 'lifecycle:transition': 'start', 'org:resource': 'Tom', 'time:timestamp': '0025-10-22T17:33:00.000+01:00'})
+        event2 = Event({'concept:name': 'Check-in table', 'lifecycle:transition': 'complete', 'org:resource': 'Tom', 'time:timestamp': '0025-10-22T17:33:00.000+01:00'})
         trace1.append(event1)
         trace1.append(event2)
-        trace1.attributes['concept:name'] = 'Trace 1'
+        trace1.attributes['concept:name'] = 'Guest9723'
 
         # Create an incomplete trace
         trace2 = Trace()
-        event3 = Event({'concept:name': 'Start', 'lifecycle:transition': 'start', 'org:resource': 'User3'})
+        event3 = Event({'concept:name': 'Check-in table', 'lifecycle:transition': 'start', 'org:resource': 'Tom', 'time:timestamp': '0025-10-22T17:48:00.000+01:00'})
         trace2.append(event3)
-        trace2.attributes['concept:name'] = 'Trace 2'
+        trace2.attributes['concept:name'] = 'Guest9724'
 
         self.log.append(trace1)
         self.log.append(trace2)
@@ -40,21 +40,24 @@ class TestCompleteness(unittest.TestCase):
         if os.path.exists(self.temp_file_path):
             os.remove(self.temp_file_path)
 
-#    def test_check_missing_values(self):
-#        missing_values = completeness.check_missing_values(self.log)
-#        expected_missing_values = {
-#            'trace_attributes': {},
-#            'event_attributes': {
-#                'concept:name': 0,
-#                'lifecycle:transition': 0,
-#                'org:resource': 0
-#            }
-#        }
-#        self.assertEqual(missing_values, expected_missing_values)
+    def test_check_missing_values(self):
+        missing_values = completeness.check_missing_values(self.log)
+        expected_missing_values = {
+            'event_attributes': {
+                'concept:name': 0,
+                'lifecycle:transition': 0,
+                'org:resource': 0,
+                'time:timestamp': 0
+            },
+            'trace_attributes': {
+                "concept:name": 0                
+            }
+        }
+        self.assertEqual(missing_values, expected_missing_values)
 
     def test_check_incomplete_traces(self):
         incomplete_traces = completeness.check_incomplete_traces(self.log)
-        expected_incomplete_traces = ['Trace 2']
+        expected_incomplete_traces = ['Guest9724']
         self.assertEqual(incomplete_traces, expected_incomplete_traces)
 
     def test_check_attribute_presence(self):
@@ -72,13 +75,14 @@ class TestCompleteness(unittest.TestCase):
                 'event_attributes': {
                     'concept:name': 0,
                     'lifecycle:transition': 0,
-                    'org:resource': 0
+                    'org:resource': 0,
+                    'time:timestamp': 0
                 },
                 'trace_attributes': {
                     "concept:name": 0
                 }
             },
-            'incomplete_traces': ['Trace 2'],
+            'incomplete_traces': ['Guest9724'],
             'lifecycle_transition': 'lifecycle:transition attribute present',
             'org_resource': 'org:resource attribute present'
         }
