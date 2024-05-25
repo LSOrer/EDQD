@@ -1,39 +1,57 @@
 import unittest
-import sys
 import os
+import sys
 
 # Ensure the parent directory is in the sys.path so we can import completeness
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import completeness
-from pm4py.objects.log.obj import EventLog, Trace, Event
-from pm4py.objects.log.exporter.xes import exporter as xes_exporter
+import xml.etree.ElementTree as ET
 
 class TestCompleteness(unittest.TestCase):
     def setUp(self):
         # Create a mock XES log
-        self.log = EventLog()
-
-        # Create a complete trace
-        trace1 = Trace({})
-        event1 = Event({'concept:name': 'Check-in table', 'lifecycle:transition': 'start', 'org:resource': 'Tom', 'time:timestamp': '0025-10-22T17:33:00.000+01:00'})
-        event2 = Event({'concept:name': 'Check-in table', 'lifecycle:transition': 'complete', 'org:resource': 'Tom', 'time:timestamp': '0025-10-22T17:33:00.000+01:00'})
-        trace1.append(event1)
-        trace1.append(event2)
-        trace1.attributes['concept:name'] = 'Guest9723'
-
-        # Create an incomplete trace
-        trace2 = Trace()
-        event3 = Event({'concept:name': 'Check-in table', 'lifecycle:transition': 'start', 'org:resource': 'Tom', 'time:timestamp': '0025-10-22T17:48:00.000+01:00'})
-        trace2.append(event3)
-        trace2.attributes['concept:name'] = 'Guest9724'
-
-        self.log.append(trace1)
-        self.log.append(trace2)
-
+        self.log_xml = '''<?xml version="1.0" encoding="UTF-8" ?>
+        <log xes.version="1.0" xes.features="nested-attributes" openxes.version="1.0RC7">
+            <extension name="Time" prefix="time" uri="http://www.xes-standard.org/time.xesext"/>
+            <extension name="Lifecycle" prefix="lifecycle" uri="http://www.xes-standard.org/lifecycle.xesext"/>
+            <extension name="Concept" prefix="concept" uri="http://www.xes-standard.org/concept.xesext"/>
+            <classifier name="Event Name" keys="concept:name"/>
+            <classifier name="(Event Name AND Lifecycle transition)" keys="concept:name lifecycle:transition"/>
+            <string key="concept:name" value="XES Event Log"/>
+            <trace>
+                <string key="concept:name" value="Guest9723"/>
+                <event>
+                    <string key="org:resource" value="Tom"/>
+                    <string key="concept:name" value="Check-in table"/>
+                    <string key="lifecycle:transition" value="start"/>
+                    <date key="time:timestamp" value="0025-10-22T17:33:00.000+01:00"/>
+                </event>
+                <event>
+                    <string key="org:resource" value="Tom"/>
+                    <string key="concept:name" value="Check-in table"/>
+                    <string key="lifecycle:transition" value="complete"/>
+                    <date key="time:timestamp" value="0025-10-22T17:33:00.000+01:00"/>
+                </event>
+            </trace>
+            <trace>
+                <string key="concept:name" value="Guest9724"/>
+                <event>
+                    <string key="org:resource" value="Tom"/>
+                    <string key="concept:name" value="Check-in table"/>
+                    <string key="lifecycle:transition" value="start"/>
+                    <date key="time:timestamp" value="0025-10-22T17:48:00.000+01:00"/>
+                </event>
+            </trace>
+        </log>'''
+        
         # Save the log to a temporary file for testing
         self.temp_file_path = 'temp_test_log.xes'
-        xes_exporter.apply(self.log, self.temp_file_path)
+        with open(self.temp_file_path, 'w') as f:
+            f.write(self.log_xml)
+
+        # Parse the log for internal testing purposes
+        self.log = completeness.parse_xes(self.temp_file_path)
 
     def tearDown(self):
         # Remove the temporary file after testing
@@ -92,6 +110,5 @@ class TestCompleteness(unittest.TestCase):
         self.assertEqual(results, expected_results)
 
 if __name__ == '__main__':
-    
     # Run the unit tests
     unittest.main()

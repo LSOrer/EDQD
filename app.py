@@ -3,7 +3,6 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import os
 import pandas as pd
-import pm4py
 import completeness
 
 app = Flask(__name__)
