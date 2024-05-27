@@ -9,9 +9,6 @@ Python 3
 - flask
 - pandas
 - NumPy
-- graphviz
-- pm4py
-
 
 ## Running the code
 
