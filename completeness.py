@@ -56,17 +56,30 @@ def check_incomplete_traces(log):
     Check for incomplete traces in the XES log based on the 'lifecycle:transition' attribute.
     Returns a list of incomplete trace IDs.
     """
+    # Transition states that end a trace according to the XES standard 
+    #https://xes-standard.org/_media/xes/xesstandarddefinition-2.0.pdf page 12
+
+    transitions = [
+    'complete', 
+    'autoskip', 
+    'manualskip', 
+    'withdraw', 
+    'ate_abort', 
+    'pi_abort'
+    ]
+
     incomplete_traces = []
     
-    for trace in log:
-        complete = False
-        for event in trace['events']:
-            if event.get('lifecycle:transition') == 'complete':
-                complete = True
-                break
-        if not complete:
-            incomplete_traces.append(trace['attributes'].get('concept:name', 'Unnamed trace'))
-    
+    if check_attribute_presence(log, 'lifecycle:transition'):
+        for trace in log:
+            complete = False
+            for event in trace['events']:
+                if event.get('lifecycle:transition') in transitions:
+                    complete = True
+                    break
+            if not complete:
+                incomplete_traces.append(trace['attributes'].get('concept:name', 'Unnamed trace'))
+        
     return incomplete_traces
 
 def check_attribute_presence(log, attribute_name):
