@@ -1,3 +1,4 @@
+from datetime import datetime
 import xml.etree.ElementTree as ET
 
 def parse_xes(file_path):
@@ -57,7 +58,7 @@ def check_incomplete_traces(log):
     Returns a list of incomplete trace IDs.
     """
     # Transition states that end a trace according to the XES standard 
-    #https://xes-standard.org/_media/xes/xesstandarddefinition-2.0.pdf page 12
+    #https://xes-standard.org/_media/xes/xesstandarddefinition-2.0.pdf pages 11-12
 
     transitions = [
     'complete', 
@@ -93,6 +94,61 @@ def check_attribute_presence(log, attribute_name):
                 return True
     return False
 
+def check_unrecorded_traces(log, pattern_threshold=3, time_gap_factor=3):
+    """
+    Check for possible unrecorded traces using pattern analysis and time gap analysis.
+    
+    Parameters:
+    - log: the event log
+    - pattern_threshold: threshold for detecting significant deviations in trace length (the lower the more sensitive)
+    - time_gap_factor: factor to determine significant time gaps (the lower the more sensitive)
+    
+    Returns:
+    - Two lists: one for pattern anomalies and one for time gap anomalies
+    """
+    
+    def analyze_trace_patterns(log, threshold):
+        trace_lengths = [len(trace['events']) for trace in log]
+        mean_length = sum(trace_lengths) / len(trace_lengths)
+        # Check for significant deviations
+        deviations = [abs(length - mean_length) for length in trace_lengths]
+        potential_missing_indices = [i for i, dev in enumerate(deviations) if dev > threshold * mean_length]
+        return potential_missing_indices
+
+    def analyze_time_gaps(log, factor):
+        significant_gaps = []
+        for i, trace in enumerate(log):
+            timestamps = [datetime.fromisoformat(event['time:timestamp']) for event in trace['events'] if 'time:timestamp' in event]
+            if len(timestamps) > 1:
+                gaps = [(timestamps[i+1] - timestamps[i]).total_seconds() for i in range(len(timestamps) - 1)]
+                mean_gap = sum(gaps) / len(gaps)
+                for j, gap in enumerate(gaps):
+                    if gap > factor * mean_gap:
+                        significant_gaps.append(i)
+        return significant_gaps
+
+    # Perform pattern analysis
+    pattern_missing_indices = analyze_trace_patterns(log, pattern_threshold)
+
+    # Perform time gap analysis
+    time_gap_indices = analyze_time_gaps(log, time_gap_factor)
+
+    # Identify trace names for the results
+    pattern_anomalies = []
+    for index in pattern_missing_indices:
+        if index > 0:
+            trace_name = log[index - 1]['attributes'].get('concept:name', 'Unnamed trace')
+            pattern_anomalies.append(trace_name)
+    
+    time_gap_anomalies = []
+    for index in time_gap_indices:
+        if index < len(log) - 1:
+            trace_name = log[index]['attributes'].get('concept:name', 'Unnamed trace')
+            time_gap_anomalies.append(trace_name)
+    
+    return "Pattern Anomalies:", pattern_anomalies, "Significant Time Gaps:", time_gap_anomalies
+
+
 def assess_completeness(file_path):
     """
     Assess the completeness of the XES log.
@@ -111,12 +167,16 @@ def assess_completeness(file_path):
         lifecycle_transition_msg = "lifecycle:transition attribute present" if lifecycle_transition_recorded else "no lifecycle:transition information"
         org_resource_msg = "org:resource attribute present" if org_resource_recorded else "no org:resource information"
  
+        unrecorded_traces = check_unrecorded_traces(log)
+
+
         return {
             'status': 'success',
             'missing_values': missing_values,
             'incomplete_traces': incomplete_traces,
             'lifecycle_transition': lifecycle_transition_msg,
-            'org_resource': org_resource_msg
+            'org_resource': org_resource_msg,
+            'unrecorded_traces': unrecorded_traces
         }
     
     except Exception as e:
