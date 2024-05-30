@@ -58,7 +58,7 @@ def check_incomplete_traces(log):
     Returns a list of incomplete trace IDs.
     """
     # Transition states that end a trace according to the XES standard 
-    #https://xes-standard.org/_media/xes/xesstandarddefinition-2.0.pdf pages 11-12
+    # https://xes-standard.org/_media/xes/xesstandarddefinition-2.0.pdf pages 11-12
 
     transitions = [
     'complete', 
@@ -98,13 +98,10 @@ def check_unrecorded_traces(log, pattern_threshold=3, time_gap_factor=3):
     """
     Check for possible unrecorded traces using pattern analysis and time gap analysis.
     
-    Parameters:
-    - log: the event log
-    - pattern_threshold: threshold for detecting significant deviations in trace length (the lower the more sensitive)
-    - time_gap_factor: factor to determine significant time gaps (the lower the more sensitive)
+    pattern_threshold: threshold for detecting significant deviations in trace length (the lower the more sensitive)
+    time_gap_factor: factor to determine significant time gaps (the lower the more sensitive)
     
-    Returns:
-    - Two lists: one for pattern anomalies and one for time gap anomalies
+    Returns two lists; one for pattern anomalies and one for time gap anomalies
     """
     
     def analyze_trace_patterns(log, threshold):
@@ -146,7 +143,39 @@ def check_unrecorded_traces(log, pattern_threshold=3, time_gap_factor=3):
             trace_name = log[index]['attributes'].get('concept:name', 'Unnamed trace')
             time_gap_anomalies.append(trace_name)
     
-    return "Pattern Anomalies:", pattern_anomalies, "Significant Time Gaps:", time_gap_anomalies
+    return "Trace Pattern Anomalies:", pattern_anomalies, "Significant Time Gaps:", time_gap_anomalies
+
+def find_orphan_events(file_path):
+    """
+    Find events that are not associated to a trace in an XES file.
+    Returns a list of orphan events found in the XES file.
+    """
+    root = ET.parse(file_path)
+    
+    # Find all traces
+    traces = root.findall('trace')
+    
+    # Find all events associated with traces
+    associated_events = []
+    for trace in traces:
+        events = trace.findall('event')
+        associated_events.extend(events)
+    
+    # Find all events in the log
+    all_events = root.findall('event')
+    
+    # Unassociated events are those in all_events but not in associated_events
+    unassociated_events = [event for event in all_events if event not in associated_events]
+    
+    # Collect attributes of the unassociated events
+    orphan_events = []
+    for event in unassociated_events:
+        attributes = {}
+        for child in event:
+            attributes[child.attrib['key']] = child.attrib['value']
+        orphan_events.append(attributes)
+    
+    return orphan_events
 
 
 def assess_completeness(file_path):
@@ -169,6 +198,7 @@ def assess_completeness(file_path):
  
         unrecorded_traces = check_unrecorded_traces(log)
 
+        orphan_events = find_orphan_events(file_path)
 
         return {
             'status': 'success',
@@ -176,7 +206,8 @@ def assess_completeness(file_path):
             'incomplete_traces': incomplete_traces,
             'lifecycle_transition': lifecycle_transition_msg,
             'org_resource': org_resource_msg,
-            'unrecorded_traces': unrecorded_traces
+            'unrecorded_traces': unrecorded_traces,
+            'orphan_events': orphan_events
         }
     
     except Exception as e:
