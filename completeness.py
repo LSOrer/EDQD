@@ -1,27 +1,6 @@
 from datetime import datetime
+from xes_parser import parse_xes 
 import xml.etree.ElementTree as ET
-
-def parse_xes(file_path):
-    """
-    Parse an XES file and return the log structure.
-    """
-    tree = ET.parse(file_path)
-    root = tree.getroot()
-
-    log = []
-    for trace in root.findall('trace'):
-        trace_data = {'attributes': {}, 'events': []}
-        for attribute in trace:
-            if attribute.tag != 'event':
-                trace_data['attributes'][attribute.attrib['key']] = attribute.attrib.get('value', attribute.text)
-            else:
-                event_data = {}
-                for event_attr in attribute:
-                    event_data[event_attr.attrib['key']] = event_attr.attrib.get('value', event_attr.text)
-                trace_data['events'].append(event_data)
-        log.append(trace_data)
-    
-    return log
 
 def check_missing_values(log):
     """
@@ -61,6 +40,7 @@ def check_incomplete_traces(log):
     # https://xes-standard.org/_media/xes/xesstandarddefinition-2.0.pdf pages 11-12
 
     transitions = [
+    'COMPLETE',
     'complete', 
     'autoskip', 
     'manualskip', 
@@ -94,14 +74,12 @@ def check_attribute_presence(log, attribute_name):
                 return True
     return False
 
-def check_unrecorded_traces(log, pattern_threshold=3, time_gap_factor=3):
+def check_unrecorded_traces(log, pattern_threshold=1, time_gap_factor=3):
     """
     Check for possible unrecorded traces using pattern analysis and time gap analysis.
-    
     pattern_threshold: threshold for detecting significant deviations in trace length (the lower the more sensitive)
     time_gap_factor: factor to determine significant time gaps (the lower the more sensitive)
-    
-    Returns two lists; one for pattern anomalies and one for time gap anomalies
+    Returns a dictionary with pattern anomalies and time gap anomalies
     """
     
     def analyze_trace_patterns(log, threshold):
@@ -134,7 +112,7 @@ def check_unrecorded_traces(log, pattern_threshold=3, time_gap_factor=3):
     pattern_anomalies = []
     for index in pattern_missing_indices:
         if index > 0:
-            trace_name = log[index - 1]['attributes'].get('concept:name', 'Unnamed trace')
+            trace_name = log[index]['attributes'].get('concept:name', 'Unnamed trace')
             pattern_anomalies.append(trace_name)
     
     time_gap_anomalies = []
@@ -143,12 +121,17 @@ def check_unrecorded_traces(log, pattern_threshold=3, time_gap_factor=3):
             trace_name = log[index]['attributes'].get('concept:name', 'Unnamed trace')
             time_gap_anomalies.append(trace_name)
     
-    return "Trace Pattern Anomalies:", pattern_anomalies, "Significant Time Gaps:", time_gap_anomalies
+    potential_unrecorded_traces = {
+        "Trace Pattern Anomalies": pattern_anomalies,
+        "Significant Time Gaps": time_gap_anomalies
+    }
+
+    return potential_unrecorded_traces
 
 def find_orphan_events(file_path):
     """
     Find events that are not associated to a trace in an XES file.
-    Returns a list of orphan events found in the XES file.
+    Returns a list of the attributes of orphan events found in the XES file.
     """
     root = ET.parse(file_path)
     
@@ -177,6 +160,28 @@ def find_orphan_events(file_path):
     
     return orphan_events
 
+def find_disordered_traces(log):
+    """
+    Check if the events of each trace in the event log are ordered by their timestamps.
+    Returns a list of trace names where the event ordering is incorrect.
+    """
+    disordered_traces = []
+
+    for trace in log:
+        trace_name = trace['attributes'].get('concept:name', 'Unnamed trace')
+        timestamps = []
+
+        for event in trace['events']:
+            timestamp_str = event.get('time:timestamp')
+            if timestamp_str:
+                timestamp = datetime.fromisoformat(timestamp_str)
+                timestamps.append(timestamp)
+
+        # Check if the list of timestamps is sorted
+        if timestamps != sorted(timestamps):
+            disordered_traces.append(trace_name)
+
+    return disordered_traces
 
 def assess_completeness(file_path):
     """
@@ -200,6 +205,8 @@ def assess_completeness(file_path):
 
         orphan_events = find_orphan_events(file_path)
 
+        disordered_traces = find_disordered_traces(log)
+
         return {
             'status': 'success',
             'missing_values': missing_values,
@@ -207,7 +214,8 @@ def assess_completeness(file_path):
             'lifecycle_transition': lifecycle_transition_msg,
             'org_resource': org_resource_msg,
             'unrecorded_traces': unrecorded_traces,
-            'orphan_events': orphan_events
+            'orphan_events': orphan_events,
+            'disordered_traces': disordered_traces
         }
     
     except Exception as e:

@@ -1,8 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+
 import os
-import pandas as pd
 import completeness
 
 app = Flask(__name__)
@@ -26,10 +26,6 @@ def upload_file():
     file.save(file_path)
 
     try:
-        # Process the file and assess data quality
-        #log = pm4py.read_xes(file_path)
-        #results = assess_data_quality(log)
-
         # Assess the completeness of the uploaded file
         results = completeness.assess_completeness(file_path)
         
