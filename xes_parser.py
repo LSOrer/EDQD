@@ -25,11 +25,8 @@ def parse_xes(file_path):
     tree = ET.parse(file_path)
     root = tree.getroot()
 
-    # Extract namespace from root tag
-    ns = {'xes': root.tag.split('}')[0].strip('{')}
-    
     log = []
-    for trace in root.findall('trace', ns):
+    for trace in root.findall('trace'):
         trace_data = {'attributes': {}, 'events': []}
         for attribute in trace:
             if attribute.tag != 'event':
