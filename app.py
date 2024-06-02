@@ -4,6 +4,10 @@ from werkzeug.utils import secure_filename
 
 import os
 import completeness
+import accuracy
+
+import time_gaps
+from xes_parser import parse_xes
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -27,7 +31,10 @@ def upload_file():
 
     try:
         # Assess the completeness of the uploaded file
-        results = completeness.assess_completeness(file_path)
+        results = {
+            'Completeness' : completeness.assess_completeness(file_path),
+            'Accuracy' : accuracy.assess_accuracy(file_path)
+            }
         
         # Remove the temporary file
         os.remove(file_path)
@@ -43,6 +50,69 @@ def upload_file():
             os.remove(file_path)
         
         return jsonify({'error': 'Error processing file', 'message': str(e)})
+
+@app.route('/api/event-timegaps', methods=['POST'])
+def event_timegaps():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part in the request"}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    if file:
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
+        
+        log = parse_xes(file_path)
+        time_gap_factor = 3.2  # Example factor, you may want to make this configurable
+        time_gap_indices, info = time_gaps.analyze_event_time_gaps(log, time_gap_factor)
+        
+        time_gap_anomalies = []
+        for index in time_gap_indices:
+            if index < len(log) - 1:
+                trace_name = log[index]['attributes'].get('concept:name', 'Unnamed trace')
+                time_gap_anomalies.append(trace_name)
+        
+        response = {
+            "significant_traces": time_gap_anomalies,
+            "info": info
+        }
+        
+        # Remove the temporary file
+        os.remove(file_path)
+
+        return jsonify(response), 200
+
+@app.route('/api/inter-trace-gaps', methods=['POST'])
+def inter_trace_gaps():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part in the request"}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    if file:
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
+        
+        log = parse_xes(file_path)
+        time_gap_factor = 2  # Example factor, you may want to make this configurable
+        significant_gaps, mean_gap = time_gaps.analyze_inter_trace_gaps(log, time_gap_factor)
+        
+        response = {
+            "significant_gaps": significant_gaps,
+            "mean_gap": mean_gap
+        }
+        
+        # Remove the temporary file
+        os.remove(file_path)
+
+        return jsonify(response), 200
+
 
 def assess_data_quality(log):
     # Example assessment, replace with actual logic
