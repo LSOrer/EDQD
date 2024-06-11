@@ -9,6 +9,7 @@ Python 3
 - flask
 - pandas
 - NumPy
+- scikit-learn
 
 ## Running the code
 
