@@ -49,7 +49,7 @@ def check_incomplete_traces(log):
     Returns a list of incomplete trace IDs.
     """
     # Transition states that end a trace according to the XES standard 
-    # https://xes-standard.org/_media/xes/xesstandarddefinition-2.0.pdf pages 11-12
+    # https://pure.tue.nl/ws/portalfiles/portal/3981980/692728941269079.pdf pages 11-12
 
     transitions = {'COMPLETE', 'complete', 'autoskip', 'manualskip', 'withdraw', 'ate_abort', 'pi_abort'}
     incomplete_traces = []
