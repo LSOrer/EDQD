@@ -355,6 +355,6 @@ def assess_completeness(file_path):
 
 # Example usage
 if __name__ == "__main__":
-    file_path = '/Users/babettebaier/Desktop/EDQD/2easy2missing.xes'
+    file_path = 'path_to_your_xes_file.xes'
     results = assess_completeness(file_path)
     print(results)

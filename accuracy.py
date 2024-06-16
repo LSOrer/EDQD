@@ -77,8 +77,54 @@ def cluster_traces_by_events(log, eps=0.5, min_samples=2):
 
     return outlier_traces
 
+def find_duplicate_events(log):
+    """
+    Find and handle duplicate events within the same trace.
+    Returns a list of trace names where duplicate events have occurred.
+    """
+    duplicate_events_in_trace = []
 
+    for trace in log:
+        trace_name = trace.get('attributes', {}).get('concept:name', 'Unnamed trace')
+        event_set = set()
+        duplicates_found = False
 
+        for event in trace.get('events', []):
+            # Convert event dictionary to a frozenset of key-value tuples for immutability and comparison
+            event_frozenset = frozenset(event.items())
+            
+            if event_frozenset in event_set:
+                duplicates_found = True
+            else:
+                event_set.add(event_frozenset)
+
+        if duplicates_found:
+            duplicate_events_in_trace.append(trace_name)
+
+    return duplicate_events_in_trace
+
+def find_duplicate_traces(log):
+    """
+    Find and handle duplicate traces.
+    Returns a list of trace names where duplicate traces have occurred.
+    """
+    duplicate_trace_names = set()  # Use a set to avoid duplicate entries
+    trace_set = set()
+    trace_to_name_map = {}
+
+    for trace in log:
+        trace_name = trace.get('attributes', {}).get('concept:name', 'Unnamed trace')
+        # Convert trace events to a tuple of frozensets for immutability and comparison
+        trace_events = tuple(frozenset(event.items()) for event in trace.get('events', []))
+
+        if trace_events in trace_set:
+            duplicate_trace_names.add(trace_name)  # Add duplicate trace name
+            duplicate_trace_names.add(trace_to_name_map[trace_events])  # Add the original trace name
+        else:
+            trace_set.add(trace_events)
+            trace_to_name_map[trace_events] = trace_name
+
+    return list(duplicate_trace_names)
 
 def assess_accuracy(file_path):
     """
@@ -90,12 +136,16 @@ def assess_accuracy(file_path):
 
         timestamp_errors = check_timestamp_accuracy(log)
         outlier_trace_names = cluster_traces_by_events(log)
+        duplicate_events = find_duplicate_events(log)
+        duplicate_traces = find_duplicate_traces(log)
 
 
         return {
             'status': 'success',
             'timestamp_errors': timestamp_errors,
-            'potential_traces_of_a_different_process': outlier_trace_names
+            'potential_traces_of_a_different_process': outlier_trace_names,
+            'duplicate_events_in_trace' : duplicate_events,
+            'duplicate_traces' : duplicate_traces
         }
     
     except Exception as e:
