@@ -1,3 +1,10 @@
+<!-- 
+The base log serves as the foundation for every other event log, into which data quality issues will be embedded. 
+This event log consists of 10 traces, each containing 5 events, and it describes the expected "normal" behavior when logging activities at a restaurant. 
+Each trace has one attribute, which is the trace name. 
+Events document various details including resources, activity names, transition statuses, timestamps, and one event attribute (the table number).
+-->
+
 <?xml version="1.0" encoding="UTF-8" ?>
 <log xes.version="1.0" xes.features="nested-attributes" openxes.version="1.0RC7">
 <extension name="Time" prefix="time" uri="http://www.xes-standard.org/time.xesext"/>
