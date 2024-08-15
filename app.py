@@ -1,124 +1,61 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from flask import Flask, request, redirect, render_template, jsonify
+import os
 from werkzeug.utils import secure_filename
 
-import os
+# import modules for the assessment of each quality dimension
 import completeness
 import accuracy
-
-import time_gaps
-from xes_parser import parse_xes
+import interpretability
+import relevancy
+import validity
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-UPLOAD_FOLDER = '/Users/babettebaier/Desktop/EDQD/logs'
+# Configurations for local usage
+#UPLOAD_FOLDER = '/directory_of_this_code/logs'
+
+# Configurations for Docker usage
+UPLOAD_FOLDER = '/app/uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Ensure the directory exists
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-@app.route('/api/upload', methods=['POST'])
+ALLOWED_EXTENSIONS = {'xes'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
-        return jsonify({'error': 'No file part'})
-
+        return redirect(request.url)
     file = request.files['file']
     if file.filename == '':
-        return jsonify({'error': 'No selected file'})
+        return redirect(request.url)
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
 
-    # Save the uploaded file to a temporary location
-    filename = secure_filename(file.filename)
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    file.save(file_path)
-
-    try:
-        # Assess the completeness of the uploaded file
+        # Assess the data quality dimensions of the uploaded file
         results = {
             'Completeness' : completeness.assess_completeness(file_path),
-            'Accuracy' : accuracy.assess_accuracy(file_path)
+            'Accuracy' : accuracy.assess_accuracy(file_path),
+            'Interpretability': interpretability.assess_interpretability(file_path),
+            'Relavency': relevancy.assess_relevancy(file_path),
+            'Validity': validity.assess_validity(file_path)
             }
         
         # Remove the temporary file
         os.remove(file_path)
-        
+
         return jsonify(results)
-    
-    except Exception as e:
-        # Capture any exceptions and print for debugging
-        print("Error processing file:", str(e))
-        
-        # Ensure temporary file is removed in case of error
-        if os.path.exists(file_path):
-            os.remove(file_path)
-        
-        return jsonify({'error': 'Error processing file', 'message': str(e)})
 
-@app.route('/api/event-timegaps', methods=['POST'])
-def event_timegaps():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part in the request"}), 400
-
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-
-    if file:
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
-        
-        log = parse_xes(file_path)
-        time_gap_factor = 3.2  # Example factor, you may want to make this configurable
-        time_gap_indices, info = time_gaps.analyze_event_time_gaps(log, time_gap_factor)
-        
-        time_gap_anomalies = []
-        for index in time_gap_indices:
-            if index < len(log) - 1:
-                trace_name = log[index]['attributes'].get('concept:name', 'Unnamed trace')
-                time_gap_anomalies.append(trace_name)
-        
-        response = {
-            "significant_traces": time_gap_anomalies,
-            "info": info
-        }
-        
-        # Remove the temporary file
-        os.remove(file_path)
-
-        return jsonify(response), 200
-
-@app.route('/api/inter-trace-gaps', methods=['POST'])
-def inter_trace_gaps():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part in the request"}), 400
-
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-
-    if file:
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
-        
-        log = parse_xes(file_path)
-        time_gap_factor = 2  # Example factor, you may want to make this configurable
-        significant_gaps, mean_gap = time_gaps.analyze_inter_trace_gaps(log, time_gap_factor)
-        
-        response = {
-            "significant_gaps": significant_gaps,
-            "mean_gap": mean_gap
-        }
-        
-        # Remove the temporary file
-        os.remove(file_path)
-
-        return jsonify(response), 200
-
-
-def assess_data_quality(log):
-    # Example assessment, replace with actual logic
-    dimensions = ['Completeness', 'Accuracy', 'Consistency']
-    scores = [90, 85, 88]
-    return {'dimensions': dimensions, 'scores': scores}
+    return redirect(request.url)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    #app.run(debug=True)
+    app.run(host="0.0.0.0", port=80, debug=True)

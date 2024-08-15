@@ -51,7 +51,7 @@ def check_incomplete_traces(log):
     # Transition states that end a trace according to the XES standard 
     # https://pure.tue.nl/ws/portalfiles/portal/3981980/692728941269079.pdf pages 11-12
 
-    transitions = {'COMPLETE', 'complete', 'autoskip', 'manualskip', 'withdraw', 'ate_abort', 'pi_abort'}
+    transitions = {'COMPLETE', 'complete', 'autoskip', 'manualskip', 'withdraw', 'ate_abort', 'pi_abort', 'Closed'}
     incomplete_traces = []
     
     if check_attribute_presence(log, 'lifecycle:transition'):
@@ -134,7 +134,6 @@ def check_unrecorded_traces(log, pattern_threshold=1, time_gap_factor=2):
         
         return significant_gaps
 
-
     # Perform pattern analysis
     pattern_missing_indices = analyze_trace_patterns(log, pattern_threshold)
 
@@ -148,11 +147,9 @@ def check_unrecorded_traces(log, pattern_threshold=1, time_gap_factor=2):
             trace_name = log[index]['attributes'].get('concept:name', 'Unnamed trace')
             pattern_anomalies.append(trace_name)
     
-
-    
     potential_unrecorded_traces = {
         "trace_pattern_anomalies": pattern_anomalies,
-        "large_inter_trace_time_gaps": trace_time_gap_anomalies
+        "unusual_inter_trace_time_gaps": trace_time_gap_anomalies
     }
 
     return potential_unrecorded_traces
@@ -188,7 +185,7 @@ def check_unrecorded_events(log, time_gap_factor=3):
                 event_time_gap_anomalies.append(trace_name)
 
     potential_unrecorded_events = {
-        "large_inter_event_time_gaps_in_trace": event_time_gap_anomalies
+        "unusual_inter_event_time_gaps": event_time_gap_anomalies
     }
 
     return potential_unrecorded_events
@@ -283,12 +280,10 @@ def calculate_completeness_score(results, max_counts):
     completeness_percentage = completeness_score * 100
     
     # Convert individual scores to percentages
-    detailed_scores = {key: score * 100 for key, score in scores.items()}
-    detailed_scores['overall_completeness_score'] = completeness_percentage
+    detailed_scores = {key: round(score * 100, 2) for key, score in scores.items()}
+    detailed_scores['overall_completeness_score'] = round(completeness_percentage, 2)
     
     return detailed_scores
-
-
 
 def assess_completeness(file_path):
     """
@@ -355,6 +350,6 @@ def assess_completeness(file_path):
 
 # Example usage
 if __name__ == "__main__":
-    file_path = 'path_to_your_xes_file.xes'
+    file_path = 'path_to_your_xes_file.xes' # Replace with your actual file path
     results = assess_completeness(file_path)
     print(results)

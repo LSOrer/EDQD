@@ -5,12 +5,12 @@ from xes_parser import parse_xes
 
 def check_timestamp_accuracy(log):
     """
-    Check if timestamps are within a reasonable range (i.e., no future dates, no dates before 1950-01-01).
+    Check if timestamps are within a reasonable range (i.e., no future dates, no dates before 1980-01-01).
     """
     future_timestamps = []
     past_timestamps = []
     now = datetime.now().replace(tzinfo=None) # ensure that all datetime objects have the same timezone awareness
-    min_date = datetime(1950, 1, 1)
+    min_date = datetime(1980, 1, 1)
 
     for trace in log:
         trace_name = trace['attributes'].get('concept:name', 'Unnamed trace')
@@ -24,8 +24,8 @@ def check_timestamp_accuracy(log):
                     past_timestamps.append(trace_name)
 
     incorrect_timestamps = {
-        'future_timestamps': future_timestamps,
-        'past_timestamps': past_timestamps
+        'future_timestamps_in_trace': future_timestamps,
+        'past_timestamps_in_trace': past_timestamps
     }
 
     return incorrect_timestamps
@@ -108,7 +108,7 @@ def find_duplicate_traces(log):
     Find and handle duplicate traces.
     Returns a list of trace names where duplicate traces have occurred.
     """
-    duplicate_trace_names = set()  # Use a set to avoid duplicate entries
+    duplicate_trace_names = set()  # Using a set to avoid duplicate entries
     trace_set = set()
     trace_to_name_map = {}
 
@@ -126,6 +126,44 @@ def find_duplicate_traces(log):
 
     return list(duplicate_trace_names)
 
+def calculate_accuracy_score(results, max_counts):
+    # Define weights for each essential assessment
+    weights = {
+        'timestamp_accuracy': 0.2,
+        'duplicate_events': 0.4,
+        'duplicate_traces': 0.4
+    }
+    
+    # Extract assessment results
+    inaccurate_timestamps = results.get('timestamp_errors', {})
+    duplicate_events = results.get('duplicate_events_in_trace', [])
+    duplicate_traces = results.get('duplicate_traces', [])
+
+    # Calculate the number of issues in each category
+    num_inaccurate_timestamps = len(inaccurate_timestamps['future_timestamps_in_trace']) + len(inaccurate_timestamps['past_timestamps_in_trace'])
+    num_duplicate_events = len(duplicate_events)
+    num_duplicate_traces = len(duplicate_traces)
+
+    # Calculate timestamp accuracy score
+    timestamp_accuracy_score = 1.0 if num_inaccurate_timestamps == 0 else 0.0
+
+    # Normalize the counts to a score between 0 and 1
+    scores = {
+        'timestamp_accuracy': timestamp_accuracy_score,
+        'duplicate_events': max(0, 1 - 10 * num_duplicate_events / max_counts['duplicate_events']),
+        'duplicate_traces': max(0, 1 - 10 * num_duplicate_traces / max_counts['duplicate_traces'])
+    }
+
+    # Calculate the weighted accuracy score
+    accuracy_score = sum(weights[key] * scores[key] for key in weights)
+    accuracy_percentage = accuracy_score * 100
+    
+    # Convert individual scores to percentages
+    detailed_scores = {key: round(score * 100, 2) for key, score in scores.items()}
+    detailed_scores['overall_accuracy_score'] = round(accuracy_percentage, 2)
+    
+    return detailed_scores
+
 def assess_accuracy(file_path):
     """
     Assess the accuracy of the XES log.
@@ -139,14 +177,26 @@ def assess_accuracy(file_path):
         duplicate_events = find_duplicate_events(log)
         duplicate_traces = find_duplicate_traces(log)
 
+        # Calculate total events and traces for max counts
+        total_events = sum(len(trace['events']) for trace in log)
+        max_counts = {
+            'inaccurate_timestamps': total_events,
+            'duplicate_events': total_events,
+            'duplicate_traces': len(log)
+        }
 
-        return {
+        results = {
             'status': 'success',
             'timestamp_errors': timestamp_errors,
             'potential_traces_of_a_different_process': outlier_trace_names,
             'duplicate_events_in_trace' : duplicate_events,
             'duplicate_traces' : duplicate_traces
         }
+
+        accuracy_scores = calculate_accuracy_score(results, max_counts)
+        results['accuracy_scores'] = accuracy_scores
+
+        return results
     
     except Exception as e:
         return {
