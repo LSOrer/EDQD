@@ -16,7 +16,10 @@ body {
     border-radius: 15px;
     border: 2px solid black;
     position: relative;
-    background-color: #388E3C;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+.box:hover {
+    transform: scale(1.05);
 }
 .small-box {
     width: 180px;

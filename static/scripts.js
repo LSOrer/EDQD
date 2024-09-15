@@ -137,7 +137,11 @@ function displayResults(data) {
                 subScoresDiv.appendChild(subScoreBox);
             });
         } else {
-            subScoresDiv.innerHTML = '<div class="small-box white-small">Error</div>';
+            var errorBox = document.createElement('div');
+            errorBox.className = 'small-box white-small';
+            errorBox.innerHTML = 'Error';
+            errorBox.setAttribute('data-description', 'A critical issue occurred in this section. Check details for more information.');
+            subScoresDiv.appendChild(errorBox);
         }
 
         dimensionBox.appendChild(subScoresDiv);
