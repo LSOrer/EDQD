@@ -21,6 +21,11 @@ document.getElementById('uploadForm').addEventListener('submit', function(event)
       });
 });
 
+document.getElementById('file-upload').addEventListener('change', function() {
+    var fileName = this.files[0] ? this.files[0].name : 'No file chosen';
+    document.getElementById('file-name').textContent = fileName;
+});
+
 function displayResults(data) {
     var resultsDiv = document.getElementById('results');
     resultsDiv.innerHTML = '<h1>Event Data Quality Dashboard</h1>';

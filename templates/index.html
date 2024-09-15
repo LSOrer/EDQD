@@ -8,13 +8,21 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     </head>
     <body>
-        <h3>Upload Event Log</h3>
-        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" accept=".xes">
-            <input type="submit" value="Upload">
-        </form>
-
-        <div id="loading" style="display: none;">
+        <center>
+            <h3>Upload Event Log</h3>
+        </center>
+        <div class="upload-container">
+            <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+                <label for="file-upload" class="custom-file-upload">
+                    Choose File
+                </label>
+                <input id="file-upload" type="file" name="file" accept=".xes">
+                <span id="file-name">No file chosen</span>
+                <input class="upload-btn" type="submit" value="Upload">
+            </form>
+        </div>
+        
+        <div id="loading" class="loading" style="display: none;">
             <div class="spinner"></div>
             <p>Processing your event log, please wait...</p>
         </div>
