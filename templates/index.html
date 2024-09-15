@@ -34,9 +34,29 @@
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <h2>Detailed Information</h2>
-                <div id="modalContent"></div>
+                <div id="modalContent">
+                    <!-- Example: Multiple Collapsible Sections with Scrollable Lists -->
+                    <div class="collapsible-section">
+                        <h3>Unrecorded Events</h3>
+                        <div class="collapsible-content">
+                            <ul class="data-list">
+                                <!-- Dynamically populate the list -->
+                            </ul>
+                            <button class="toggle-button">Show More</button>
+                        </div>
+                    </div>
+                    
+                    <div class="collapsible-section">
+                        <h3>Other Large Dataset</h3>
+                        <div class="collapsible-content">
+                            <ul class="data-list">
+                                <!-- Dynamically populate the list -->
+                            </ul>
+                            <button class="toggle-button">Show More</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
         <script src="{{ url_for('static', filename='scripts.js') }}">
         </script>
     </body>

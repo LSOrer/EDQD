@@ -94,7 +94,7 @@ function displayResults(data) {
     ];
 
     qualityDimensions.forEach((dimension, index) => {
-        var colorClass = dimension.status === 'success' ? getColorClass(dimension.score, 'main') : 'white-main';
+        var colorClass = dimension.status === 'success' ? getColorClass(dimension.score, 'main') : 'grey-main';
 
         var dimensionBox = document.createElement('div');
         dimensionBox.className = `box ${colorClass}`;
@@ -159,6 +159,32 @@ function displayResults(data) {
 
         resultsDiv.appendChild(dimensionBox);
     });
+
+    var legendDiv = document.createElement('div');
+    legendDiv.className = 'color-legend';
+    legendDiv.innerHTML = `
+        <h3>Legend</h3>
+        <div class="legend-item">
+            <div class="legend-color green-main"></div>
+            <span>High Score (100%) - Your event log meets the highest quality standards.</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color yellow-main"></div>
+            <span>Medium Score (80%-99%) - Caution advised, potential issues detected. Please review the 'Details' section.</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color red-main"></div>
+            <span>Low Score (below 80%) - Significant issues detected in your event log.</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color grey-main"></div>
+            <span>Error - A fundamental issue exists with your data.</span>
+        </div>
+    `;
+
+    // Append the single legend at the end of all the dimension boxes
+    resultsDiv.appendChild(legendDiv);
+
 }
 
 function getColorClass(score, type) {
@@ -184,6 +210,10 @@ function openModal(dimension) {
     } else {
         modalContent.innerHTML = `<p><strong>Error:</strong> ${dimension.details.message}</p>`;
     }
+    
+    // Initialize collapsible sections and scrollable lists after the content is generated
+    initializeModalLists();
+    
     modal.style.display = "block";
 }
 
@@ -201,14 +231,39 @@ function generateDetailTable(details) {
     let html = '';
     Object.keys(details).forEach(key => {
         if (details[key] !== null && details[key] !== undefined) {
+            // Handle if the value is an object (dictionary) or an array (list)
             if (typeof details[key] === 'object') {
-                html += `<h3>${key}</h3>`;
-                html += '<table>';
-                Object.keys(details[key]).forEach(subKey => {
-                    html += `<tr><th>${subKey}</th><td>${JSON.stringify(details[key][subKey], null, 2)}</td></tr>`;
-                });
-                html += '</table>';
+                // If the detail is an array (list), create a collapsible section with a scrollable list
+                if (Array.isArray(details[key])) {
+                    html += `
+                        <div class="collapsible-section">
+                            <h3>${key}</h3>
+                            <div class="collapsible-content">
+                                <ul class="data-list">
+                                    ${details[key].map(item => `<li>${JSON.stringify(item, null, 2)}</li>`).join('')}
+                                </ul>
+                                <button class="toggle-button">Show More</button>
+                            </div>
+                        </div>`;
+                } else {
+                    // If the detail is a dictionary, create a collapsible section with a table for key-value pairs
+                    html += `
+                        <div class="collapsible-section">
+                            <h3>${key}</h3>
+                            <div class="collapsible-content">
+                                <table class="data-table">
+                                    ${Object.keys(details[key]).map(subKey => `
+                                        <tr>
+                                            <th>${subKey}</th>
+                                            <td>${JSON.stringify(details[key][subKey], null, 2)}</td>
+                                        </tr>`).join('')}
+                                </table>
+                                <button class="toggle-button">Show More</button>
+                            </div>
+                        </div>`;
+                }
             } else {
+                // Render non-object properties directly as text
                 html += `<p><strong>${key}:</strong> ${details[key]}</p>`;
             }
         } else {
@@ -216,4 +271,42 @@ function generateDetailTable(details) {
         }
     });
     return html;
+}
+
+// Function to initialize collapsible sections and scrollable lists in the modal
+function initializeModalLists() {
+    // Find all collapsible sections in the modal
+    const collapsibleSections = document.querySelectorAll('.collapsible-section');
+
+    collapsibleSections.forEach(section => {
+        // Add click event to the section header (h3) to toggle content visibility
+        const header = section.querySelector('h3');
+        const content = section.querySelector('.collapsible-content');
+        const list = content.querySelector('.data-list');
+        const toggleButton = content.querySelector('.toggle-button');
+        
+        // Set up collapsible section
+        header.addEventListener('click', () => {
+            content.classList.toggle('open');
+        });
+
+        // Handle long lists: If list has more than 5 items, make it scrollable and show toggle button
+        if (list && list.children.length > 5) {
+            list.style.maxHeight = '150px'; // Make list scrollable
+            toggleButton.style.display = 'block'; // Show toggle button
+            
+            // Toggle between expanded and collapsed states
+            toggleButton.addEventListener('click', () => {
+                if (list.style.maxHeight === '150px') {
+                    list.style.maxHeight = 'none'; // Expand to full height
+                    toggleButton.textContent = 'Show Less';
+                } else {
+                    list.style.maxHeight = '150px'; // Collapse back
+                    toggleButton.textContent = 'Show More';
+                }
+            });
+        } else {
+            toggleButton.style.display = 'none'; // Hide toggle button if list is short
+        }
+    });
 }
