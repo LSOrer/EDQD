@@ -140,12 +140,16 @@ def check_unrecorded_traces(log, pattern_threshold=1, time_gap_factor=2):
     # Perform inter trace time gap analysis
     trace_time_gap_anomalies = analyze_inter_trace_gaps(log, time_gap_factor)
 
-    # Identify trace names for the results
+    # Identify trace names and the number of events in the traces for the results
     pattern_anomalies = []
     for index in pattern_missing_indices:
         if index > 0:
             trace_name = log[index]['attributes'].get('concept:name', 'Unnamed trace')
-            pattern_anomalies.append(trace_name)
+            num_events = len(log[index]['events'])
+            pattern_anomalies.append({
+                'trace_name': trace_name,
+                'num_events': num_events
+            })
     
     potential_unrecorded_traces = {
         "trace_pattern_anomalies": pattern_anomalies,
@@ -155,41 +159,46 @@ def check_unrecorded_traces(log, pattern_threshold=1, time_gap_factor=2):
     return potential_unrecorded_traces
 
 
-def check_unrecorded_events(log, time_gap_factor=3):
+def check_unrecorded_events(log, time_gap_factor=300):
     """
     Check for possible unrecorded events using time gap analysis.
     time_gap_factor: factor to determine significant time gaps (the lower the more sensitive)
-    Returns a list of trace names of traces that might have missing events
+    Returns a list of trace names and the events with large gaps between them.
     """
-    def analyze_event_time_gaps(log, factor):
+    def analyze_event_time_gaps(trace, factor):
         significant_gaps = []
-        for i, trace in enumerate(log):
-            timestamps = [datetime.fromisoformat(event['time:timestamp']) for event in trace['events'] if 'time:timestamp' in event]
-            if len(timestamps) > 1:
-                gaps = [(timestamps[i+1] - timestamps[i]).total_seconds() for i in range(len(timestamps) - 1)]
-                mean_gap = sum(gaps) / len(gaps)
-                for gap in gaps:
-                    if gap > factor * mean_gap:
-                        significant_gaps.append(i)
-                        break  # Avoid duplicate entries for the same trace
+        timestamps = [datetime.fromisoformat(event['time:timestamp']) for event in trace['events'] if 'time:timestamp' in event]
+        events = [event['concept:name'] for event in trace['events'] if 'time:timestamp' in event]
+        
+        if len(timestamps) > 1:
+            gaps = [(timestamps[i+1] - timestamps[i]).total_seconds() for i in range(len(timestamps) - 1)]
+            mean_gap = sum(gaps) / len(gaps)
+            for i, gap in enumerate(gaps):
+                if gap > factor * mean_gap:
+                    significant_gaps.append({
+                        'event1': events[i],
+                        'event2': events[i+1],
+                        'gap': gap
+                    })
         return significant_gaps
     
-    # Perform time gap analysis
-    time_gap_indices = analyze_event_time_gaps(log, time_gap_factor)
-
     event_time_gap_anomalies = []
-    for index in time_gap_indices:
-        if index < len(log) - 1:
-            trace_name = log[index]['attributes'].get('concept:name', 'Unnamed trace')
-            if trace_name not in event_time_gap_anomalies:
-                event_time_gap_anomalies.append(trace_name)
-
-    potential_unrecorded_events = {
+    
+    # Analyze each trace
+    for trace in log:
+        trace_name = trace['attributes'].get('concept:name', 'Unnamed trace')
+        significant_gaps = analyze_event_time_gaps(trace, time_gap_factor)
+        
+        if significant_gaps:
+            for gap_info in significant_gaps:
+                event_time_gap_anomalies.append({
+                    'trace_name': trace_name,
+                    'message': f"Large gap between {gap_info['event1']} and {gap_info['event2']}, gap: {gap_info['gap']} seconds"
+                })
+    
+    return {
         "unusual_inter_event_time_gaps": event_time_gap_anomalies
     }
-
-    return potential_unrecorded_events
-
 
 def find_orphan_events(file_path):
     """

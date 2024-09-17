@@ -16,12 +16,13 @@ def check_timestamp_accuracy(log):
         trace_name = trace['attributes'].get('concept:name', 'Unnamed trace')
         for event in trace['events']:
             timestamp = event.get('time:timestamp')
+            event_name = event.get('concept:name', 'Unnamed event')
             if timestamp:
                 timestamp = datetime.fromisoformat(timestamp).replace(tzinfo=None)
                 if timestamp > now:
-                    future_timestamps.append(trace_name)
+                    future_timestamps.append((trace_name, event_name))
                 if timestamp < min_date:
-                    past_timestamps.append(trace_name)
+                    past_timestamps.append((trace_name, event_name))
 
     incorrect_timestamps = {
         'future_timestamps_in_trace': future_timestamps,
@@ -80,26 +81,27 @@ def cluster_traces_by_events(log, eps=0.5, min_samples=2):
 def find_duplicate_events(log):
     """
     Find and handle duplicate events within the same trace.
-    Returns a list of trace names where duplicate events have occurred.
+    Returns a list of trace names and event names where duplicate events have occurred.
     """
     duplicate_events_in_trace = []
 
     for trace in log:
         trace_name = trace.get('attributes', {}).get('concept:name', 'Unnamed trace')
         event_set = set()
-        duplicates_found = False
+        duplicate_events = []
 
         for event in trace.get('events', []):
+            event_name = event.get('concept:name', 'Unnamed event')
             # Convert event dictionary to a frozenset of key-value tuples for immutability and comparison
             event_frozenset = frozenset(event.items())
             
             if event_frozenset in event_set:
-                duplicates_found = True
+                duplicate_events.append(event_name)
             else:
                 event_set.add(event_frozenset)
 
-        if duplicates_found:
-            duplicate_events_in_trace.append(trace_name)
+        if duplicate_events:
+            duplicate_events_in_trace.append({'trace_name': trace_name, 'duplicate_events': duplicate_events})
 
     return duplicate_events_in_trace
 
