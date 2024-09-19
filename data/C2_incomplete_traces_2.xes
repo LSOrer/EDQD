@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<log xes.version="1.0" xes.features="nested-attributes" openxes.version="1.0RC7">
+<extension name="Time" prefix="time" uri="http://www.xes-standard.org/time.xesext"/>
+<extension name="Lifecycle" prefix="lifecycle" uri="http://www.xes-standard.org/lifecycle.xesext"/>
+<extension name="Concept" prefix="concept" uri="http://www.xes-standard.org/concept.xesext"/>
+<classifier name="Event Name" keys="concept:name"/>
+<classifier name="(Event Name AND Lifecycle transition)" keys="concept:name lifecycle:transition"/>
+<string key="concept:name" value="XES Event Log"/>
+<!-- This event log incorporates incomplete traces, which manifest if the event attribute "lifecycle:transition" is present, 
+and there is no event in the trace that equals to one of the closing key words defined by the XES standard. -->
+<!-- All traces of this event log are incomplete as there is no closing-event in any trace. -->
+    <trace>
+    <string key="concept:name" value="Guest9720"/> 
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Check-in table"/>
+            <string key="lifecycle:transition" value="schedule"/>
+            <date key="time:timestamp" value="2023-10-22T10:33:00.000+01:00"/>
+        </event> 
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Take orders"/>
+            <string key="lifecycle:transition" value="assign"/>
+            <date key="time:timestamp" value="2023-10-22T10:38:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Sue"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Drinks ready"/>
+            <string key="lifecycle:transition" value="reassign"/>
+            <date key="time:timestamp" value="2023-10-22T10:46:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Tony"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Meals ready"/>
+            <string key="lifecycle:transition" value="start"/>
+            <date key="time:timestamp" value="2023-10-22T10:56:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Bill customer"/>
+            <string key="lifecycle:transition" value="suspend"/>
+            <date key="time:timestamp" value="2023-10-22T11:34:00.000+01:00"/>
+        </event>
+    </trace>
+    <trace>
+    <string key="concept:name" value="Guest9721"/> 
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Check-in table"/>
+            <string key="lifecycle:transition" value="schedule"/>
+            <date key="time:timestamp" value="2023-10-22T11:33:00.000+01:00"/>
+        </event> 
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Take orders"/>
+            <string key="lifecycle:transition" value="assign"/>
+            <date key="time:timestamp" value="2023-10-22T11:38:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Sue"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Drinks ready"/>
+            <string key="lifecycle:transition" value="start"/>
+            <date key="time:timestamp" value="2023-10-22T11:46:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Tony"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Meals ready"/>
+            <string key="lifecycle:transition" value="suspend"/>
+            <date key="time:timestamp" value="2023-10-22T11:56:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Bill customer"/>
+            <string key="lifecycle:transition" value="resume"/>
+            <date key="time:timestamp" value="2023-10-22T12:34:00.000+01:00"/>
+        </event>
+    </trace>
+    <trace>
+    <string key="concept:name" value="Guest9722"/> 
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Check-in table"/>
+            <string key="lifecycle:transition" value="start"/>
+            <date key="time:timestamp" value="2023-10-22T12:33:00.000+01:00"/>
+        </event> 
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Take orders"/>
+            <string key="lifecycle:transition" value="suspend"/>
+            <date key="time:timestamp" value="2023-10-22T12:38:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Sue"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Drinks ready"/>
+            <string key="lifecycle:transition" value="resume"/>
+            <date key="time:timestamp" value="2023-10-22T12:46:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Tony"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Meals ready"/>
+            <string key="lifecycle:transition" value="suspend"/>
+            <date key="time:timestamp" value="2023-10-22T12:56:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Bill customer"/>
+            <string key="lifecycle:transition" value="resume"/>
+            <date key="time:timestamp" value="2023-10-22T13:34:00.000+01:00"/>
+        </event>
+    </trace>
+    <trace>
+    <string key="concept:name" value="Guest9723"/> 
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Check-in table"/>
+            <string key="lifecycle:transition" value="schedule"/>
+            <date key="time:timestamp" value="2023-10-22T13:33:00.000+01:00"/>
+        </event> 
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Take orders"/>
+            <string key="lifecycle:transition" value="assign"/>
+            <date key="time:timestamp" value="2023-10-22T13:38:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Sue"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Drinks ready"/>
+            <string key="lifecycle:transition" value="reassign"/>
+            <date key="time:timestamp" value="2023-10-22T13:46:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Tony"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Meals ready"/>
+            <string key="lifecycle:transition" value="reassign"/>
+            <date key="time:timestamp" value="2023-10-22T13:56:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Bill customer"/>
+            <string key="lifecycle:transition" value="reassign"/>
+            <date key="time:timestamp" value="2023-10-22T14:34:00.000+01:00"/>
+        </event>
+    </trace>
+    <trace>
+    <string key="concept:name" value="Guest9724"/> 
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Check-in table"/>
+            <string key="lifecycle:transition" value="schedule"/>
+            <date key="time:timestamp" value="2023-10-22T14:33:00.000+01:00"/>
+        </event> 
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Take orders"/>
+            <string key="lifecycle:transition" value="assign"/>
+            <date key="time:timestamp" value="2023-10-22T14:38:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Sue"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Drinks ready"/>
+            <string key="lifecycle:transition" value="start"/>
+            <date key="time:timestamp" value="2023-10-22T14:46:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Tony"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Meals ready"/>
+            <string key="lifecycle:transition" value="suspend"/>
+            <date key="time:timestamp" value="2023-10-22T14:56:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Bill customer"/>
+            <string key="lifecycle:transition" value="resume"/>
+            <date key="time:timestamp" value="2023-10-22T15:34:00.000+01:00"/>
+        </event>
+    </trace>
+    <trace>
+    <string key="concept:name" value="Guest9725"/> 
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Check-in table"/>
+            <string key="lifecycle:transition" value="start"/>
+            <date key="time:timestamp" value="2023-10-22T15:33:00.000+01:00"/>
+        </event> 
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Take orders"/>
+            <string key="lifecycle:transition" value="start"/>
+            <date key="time:timestamp" value="2023-10-22T15:38:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Sue"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Drinks ready"/>
+            <string key="lifecycle:transition" value="start"/>
+            <date key="time:timestamp" value="2023-10-22T15:46:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Tony"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Meals ready"/>
+            <string key="lifecycle:transition" value="start"/>
+            <date key="time:timestamp" value="2023-10-22T15:56:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Bill customer"/>
+            <string key="lifecycle:transition" value="start"/>
+            <date key="time:timestamp" value="2023-10-22T16:34:00.000+01:00"/>
+        </event>
+    </trace>
+    <trace>
+    <string key="concept:name" value="Guest9726"/> 
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Check-in table"/>
+            <string key="lifecycle:transition" value="open"/>
+            <date key="time:timestamp" value="2023-10-22T16:33:00.000+01:00"/>
+        </event> 
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Take orders"/>
+            <string key="lifecycle:transition" value="work in progress"/>
+            <date key="time:timestamp" value="2023-10-22T16:38:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Sue"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Drinks ready"/>
+            <string key="lifecycle:transition" value="work in progress"/>
+            <date key="time:timestamp" value="2023-10-22T16:46:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Tony"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Meals ready"/>
+            <string key="lifecycle:transition" value="work in progress"/>
+            <date key="time:timestamp" value="2023-10-22T16:56:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Bill customer"/>
+            <string key="lifecycle:transition" value="work in progress"/>
+            <date key="time:timestamp" value="2023-10-22T17:34:00.000+01:00"/>
+        </event>
+    </trace>
+    <trace>
+    <string key="concept:name" value="Guest9727"/> 
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Check-in table"/>
+            <string key="lifecycle:transition" value="new"/>
+            <date key="time:timestamp" value="2023-10-22T17:33:00.000+01:00"/>
+        </event> 
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Take orders"/>
+            <string key="lifecycle:transition" value="working"/>
+            <date key="time:timestamp" value="2023-10-22T17:38:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Sue"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Drinks ready"/>
+            <string key="lifecycle:transition" value="working"/>
+            <date key="time:timestamp" value="2023-10-22T17:46:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Tony"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Meals ready"/>
+            <string key="lifecycle:transition" value="working"/>
+            <date key="time:timestamp" value="2023-10-22T17:56:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Bill customer"/>
+            <string key="lifecycle:transition" value="working"/>
+            <date key="time:timestamp" value="2023-10-22T18:34:00.000+01:00"/>
+        </event>
+    </trace>
+    <trace>
+    <string key="concept:name" value="Guest9728"/> 
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Check-in table"/>
+            <string key="lifecycle:transition" value="open"/>
+            <date key="time:timestamp" value="2023-10-22T18:33:00.000+01:00"/>
+        </event> 
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Take orders"/>
+            <string key="lifecycle:transition" value="assign"/>
+            <date key="time:timestamp" value="2023-10-22T18:38:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Sue"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Drinks ready"/>
+            <string key="lifecycle:transition" value="start"/>
+            <date key="time:timestamp" value="2023-10-22T18:46:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Tony"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Meals ready"/>
+            <string key="lifecycle:transition" value="wait for customer"/>
+            <date key="time:timestamp" value="2023-10-22T18:56:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Bill customer"/>
+            <string key="lifecycle:transition" value="wait for vendor"/>
+            <date key="time:timestamp" value="2023-10-22T19:34:00.000+01:00"/>
+        </event>
+    </trace>
+    <trace>
+    <string key="concept:name" value="Guest9729"/> 
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Check-in table"/>
+            <string key="lifecycle:transition" value="open"/>
+            <date key="time:timestamp" value="2023-10-22T19:33:00.000+01:00"/>
+        </event> 
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Take orders"/>
+            <string key="lifecycle:transition" value="open"/>
+            <date key="time:timestamp" value="2023-10-22T19:38:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Sue"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Drinks ready"/>
+            <string key="lifecycle:transition" value="open"/>
+            <date key="time:timestamp" value="2023-10-22T19:46:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Tony"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Meals ready"/>
+            <string key="lifecycle:transition" value="open"/>
+            <date key="time:timestamp" value="2023-10-22T19:56:00.000+01:00"/>
+        </event>
+        <event>
+            <string key="org:resource" value="Tom"/>
+            <int key="Table" value="5"/>
+            <string key="concept:name" value="Bill customer"/>
+            <string key="lifecycle:transition" value="open"/>
+            <date key="time:timestamp" value="2023-10-22T20:34:00.000+01:00"/>
+        </event>
+    </trace>
+</log>
