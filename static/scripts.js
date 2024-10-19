@@ -287,6 +287,7 @@ function initializeModalLists() {
         
         // Set up collapsible section
         header.addEventListener('click', () => {
+            section.classList.toggle('open'); // Toggle 'open' on the parent section
             content.classList.toggle('open');
         });
 

@@ -104,6 +104,23 @@ body {
     padding: 10px;
     border-radius: 5px;
     margin: 5px;
+    position: relative;
+}
+
+.collapsible-section h3::after {
+    content: '\203A';
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%) rotate(90deg); 
+    font-size: 1.2em;
+    transition: transform 0.3s ease;
+    transform-origin: center; /* This ensures the rotation happens in place */
+}
+
+/* Rotate the symbol when the collapsible section is open */
+.collapsible-section.open h3::after {
+    transform: translateY(-50%) rotate(-90deg); /* Pointing up when open */
 }
 
 .collapsible-content {
@@ -302,4 +319,8 @@ input[type="file"] {
     margin-right: 10px;
     border-radius: 3px;
     border: 1px solid #ddd;
+}
+
+.center-text {
+    text-align: center;
 }
