@@ -108,38 +108,40 @@ def find_duplicate_events(log):
 def find_duplicate_traces(log):
     """
     Find and handle duplicate traces.
-    Returns a list of trace names where duplicate traces have occurred.
+    Returns a list of lists where each list contains the names of all duplicate traces.
     """
-    duplicate_trace_names = set()  # Using a set to avoid duplicate entries
-    trace_set = set()
     trace_to_name_map = {}
+    trace_duplicates = []
 
     for trace in log:
         trace_name = trace.get('attributes', {}).get('concept:name', 'Unnamed trace')
         # Convert trace events to a tuple of frozensets for immutability and comparison
         trace_events = tuple(frozenset(event.items()) for event in trace.get('events', []))
 
-        if trace_events in trace_set:
-            duplicate_trace_names.add(trace_name)  # Add duplicate trace name
-            duplicate_trace_names.add(trace_to_name_map[trace_events])  # Add the original trace name
+        if trace_events in trace_to_name_map:
+            # If the trace pattern already exists, add the trace name to the existing group of duplicates
+            trace_to_name_map[trace_events].append(trace_name)
         else:
-            trace_set.add(trace_events)
-            trace_to_name_map[trace_events] = trace_name
+            # Otherwise, create a new list for this trace pattern
+            trace_to_name_map[trace_events] = [trace_name]
 
-    return list(duplicate_trace_names)
+    # Collect only groups with more than one trace (duplicates)
+    trace_duplicates = [names for names in trace_to_name_map.values() if len(names) > 1]
+
+    return trace_duplicates
 
 def calculate_accuracy_score(results, max_counts):
     # Define weights for each essential assessment
     weights = {
-        'timestamp_accuracy': 0.2,
-        'duplicate_events': 0.4,
-        'duplicate_traces': 0.4
+        'A1_Unrealistic_Timestamps': 0.2,
+        'A3_2_Event_Duplicates': 0.4,
+        'A3_1_Trace_Duplicates': 0.4
     }
     
     # Extract assessment results
-    inaccurate_timestamps = results.get('timestamp_errors', {})
-    duplicate_events = results.get('duplicate_events_in_trace', [])
-    duplicate_traces = results.get('duplicate_traces', [])
+    inaccurate_timestamps = results.get('A1_Unrealistic_Timestamps', {})
+    duplicate_events = results.get('A3_2_Event_Duplicates', [])
+    duplicate_traces = results.get('A3_1_Trace_Duplicates', [])
 
     # Calculate the number of issues in each category
     num_inaccurate_timestamps = len(inaccurate_timestamps['future_timestamps_in_trace']) + len(inaccurate_timestamps['past_timestamps_in_trace'])
@@ -151,9 +153,9 @@ def calculate_accuracy_score(results, max_counts):
 
     # Normalize the counts to a score between 0 and 1
     scores = {
-        'timestamp_accuracy': timestamp_accuracy_score,
-        'duplicate_events': max(0, 1 - 10 * num_duplicate_events / max_counts['duplicate_events']),
-        'duplicate_traces': max(0, 1 - 10 * num_duplicate_traces / max_counts['duplicate_traces'])
+        'A1_Unrealistic_Timestamps': timestamp_accuracy_score,
+        'A3_2_Event_Duplicates': max(0, 1 - 10 * num_duplicate_events / max_counts['A3_2_Event_Duplicates']),
+        'A3_1_Trace_Duplicates': max(0, 1 - 10 * num_duplicate_traces / max_counts['A3_1_Trace_Duplicates'])
     }
 
     # Calculate the weighted accuracy score
@@ -162,7 +164,7 @@ def calculate_accuracy_score(results, max_counts):
     
     # Convert individual scores to percentages
     detailed_scores = {key: round(score * 100, 2) for key, score in scores.items()}
-    detailed_scores['overall_accuracy_score'] = round(accuracy_percentage, 2)
+    detailed_scores['A0_Overall_Accuracy_Score'] = round(accuracy_percentage, 2)
     
     return detailed_scores
 
@@ -182,21 +184,21 @@ def assess_accuracy(file_path):
         # Calculate total events and traces for max counts
         total_events = sum(len(trace['events']) for trace in log)
         max_counts = {
-            'inaccurate_timestamps': total_events,
-            'duplicate_events': total_events,
-            'duplicate_traces': len(log)
+            'A1_Unrealistic_Timestamps': total_events,
+            'A3_2_Event_Duplicates': total_events,
+            'A3_1_Trace_Duplicates': len(log)
         }
 
         results = {
-            'status': 'success',
-            'timestamp_errors': timestamp_errors,
-            'potential_traces_of_a_different_process': outlier_trace_names,
-            'duplicate_events_in_trace' : duplicate_events,
-            'duplicate_traces' : duplicate_traces
+            'z_status': 'success',
+            'A1_Unrealistic_Timestamps': timestamp_errors,
+            'A2_Trace_belongs_to_a_diffrent_process': outlier_trace_names,
+            'A3_2_Event_Duplicates' : duplicate_events,
+            'A3_1_Trace_Duplicates' : duplicate_traces
         }
 
         accuracy_scores = calculate_accuracy_score(results, max_counts)
-        results['accuracy_scores'] = accuracy_scores
+        results['A0_Accuracy_Scores'] = accuracy_scores
 
         return results
     

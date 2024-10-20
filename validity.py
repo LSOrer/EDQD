@@ -156,29 +156,41 @@ def validate_attribute_values(file_path):
 def check_allowed_data_types(file_path):
     """
     Check every data type in the event log against a list of allowed data types.
-    Returns a message for each unsupported data type found.
+    Returns a dictionary for each unsupported data type found, including trace name, attribute name, and unsupported data type.
     """
     allowed_data_types = {'string', 'date', 'int', 'float', 'boolean', 'id', 'list', 'container', 'event'}
     
     tree = ET.parse(file_path)
     root = tree.getroot()
 
-    unsupported_data_types = set()
+    unsupported_data_types = []
 
     for trace in root.findall('trace'):
+        trace_name = trace.find('string[@key="concept:name"]').attrib.get('value', 'Unnamed trace')
+
         # Check attribute data types in trace attributes
         for attribute in trace:
             if attribute.tag not in allowed_data_types:
-                unsupported_data_types.add(attribute.tag)
+                unsupported_data_types.append({
+                    "trace_name": trace_name,
+                    "trace_attribute_name": attribute.attrib.get('key', 'Unnamed attribute'),
+                    "unsupported_data_type": attribute.tag
+                })
 
         # Check attribute data types in event attributes
         for event in trace.findall('event'):
+            event_name = event.find('string[@key="concept:name"]').attrib.get('value', 'Unnamed event')
             for event_attr in event:
                 if event_attr.tag not in allowed_data_types:
-                    unsupported_data_types.add(event_attr.tag)
+                    unsupported_data_types.append({
+                        "trace_name": trace_name,
+                        "event_name": event_name,
+                        "event_attribute_name": event_attr.attrib.get('key', 'Unnamed attribute'),
+                        "unsupported_data_type": event_attr.tag
+                    })
 
     if unsupported_data_types:
-        return [f"{data_type} is not a supported data type according to the XES standard" for data_type in unsupported_data_types]
+        return unsupported_data_types
     else:
         return ["All data types are supported according to the XES standard"]
 
@@ -294,7 +306,9 @@ def validate_timestamp_logical_constraints(file_path):
         return True
 
     for trace in root.findall('trace'):
+        trace_name = trace.find('string[@key="concept:name"]').attrib.get('value', 'Unnamed trace')
         for event in trace.findall('event'):
+            event_name = event.find('string[@key="concept:name"]').attrib.get('value', 'Unnamed event')
             for event_attr in event:
                 if event_attr.tag == 'date':
                     value = event_attr.attrib.get('value', event_attr.text)
@@ -305,30 +319,29 @@ def validate_timestamp_logical_constraints(file_path):
                             if level == 1:  # YYYY-MM-DD
                                 year, month, day = int(match.group(0)[:4]), int(match.group(0)[5:7]), int(match.group(0)[8:10])
                                 if not is_valid_date(year, month, day):
-                                    issues.append(f"Invalid date: {value}")
+                                    issues.append(f"Trace: {trace_name}, Event: {event_name}, Invalid date: {value}")
                             elif level == 2:  # YYYY-MM-DDThh:mm:ss
                                 year, month, day = int(match.group(0)[:4]), int(match.group(0)[5:7]), int(match.group(0)[8:10])
                                 hour, minute, second = int(match.group(0)[11:13]), int(match.group(0)[14:16]), int(match.group(0)[17:19])
                                 if not is_valid_date(year, month, day) or not is_valid_time(hour, minute, second):
-                                    issues.append(f"Invalid date/time: {value}")
+                                    issues.append(f"Trace: {trace_name}, Event: {event_name}, Invalid date/time: {value}")
                             elif level == 3:  # YYYY-MM-DDThh:mm:ss.sss
                                 year, month, day = int(match.group(0)[:4]), int(match.group(0)[5:7]), int(match.group(0)[8:10])
                                 hour, minute, second = int(match.group(0)[11:13]), int(match.group(0)[14:16]), int(match.group(0)[17:19])
                                 millisecond = int(match.group(0)[20:23])
                                 if not is_valid_date(year, month, day) or not is_valid_time(hour, minute, second, millisecond):
-                                    issues.append(f"Invalid date/time: {value}")
+                                    issues.append(f"Trace: {trace_name}, Event: {event_name}, Invalid date/time: {value}")
                             elif level == 4:  # YYYY-MM-DDThh:mm:ss.sss+hh:mm
                                 year, month, day = int(match.group(0)[:4]), int(match.group(0)[5:7]), int(match.group(0)[8:10])
                                 hour, minute, second = int(match.group(0)[11:13]), int(match.group(0)[14:16]), int(match.group(0)[17:19])
                                 millisecond = int(match.group(0)[20:23])
-                                # For timezone, we won't check its logical correctness but will ensure it's in the correct format
                                 timezone = match.group(0)[24:]
                                 if not is_valid_date(year, month, day) or not is_valid_time(hour, minute, second, millisecond):
-                                    issues.append(f"Invalid date/time: {value}")
+                                    issues.append(f"Trace: {trace_name}, Event: {event_name}, Invalid date/time: {value}")
                             valid = True
                             break
                     if not valid:
-                        issues.append(f"Invalid timestamp format: {value}")
+                        issues.append(f"Trace: {trace_name}, Event: {event_name}, Invalid timestamp format: {value}")
 
     if not issues:
         return ["All timestamps are logically valid."]
@@ -340,12 +353,12 @@ def calculate_validity_score(results):
     Calculate the validity score based on assessment results.
     """
     # Extract assessment results
-    invalid_attribute_keys = results.get('invalid_attribute_keys')
-    duplicate_attribute_keys = results.get('duplicate_attribute_keys')
-    invalid_attribute_values = results.get('invalid_attribute_values')
-    unsupported_data_types = results.get('unsupported_data_types')
-    timestamp_consistency = results.get('timestamp_inconsistency_in_trace')
-    logical_timestamp_issues = results.get('logical_timestamp_issues')
+    invalid_attribute_keys = results.get('V1_1_Valid_Key_Names')
+    duplicate_attribute_keys = results.get('V1_2_Unique_Attribute_Keys')
+    invalid_attribute_values = results.get('V2_1_Data_Type_to_Value_Conformance')
+    unsupported_data_types = results.get('V3_1_Allowed_Data_Types')
+    timestamp_consistency = results.get('V4_1_Consistent_Timestamp_Format')
+    logical_timestamp_issues = results.get('V4_2_Logically_Valid_Timestamps')
 
     # Calculate individual scores
     attribute_keys_score = 100 if not invalid_attribute_keys else 0
@@ -357,19 +370,19 @@ def calculate_validity_score(results):
 
     # Calculate the overall validity score
     scores = {
-        'valid_attribute_keys': attribute_keys_score,
-        'unique_keys': unique_keys_score,
-        'valid_attribute_values': attribute_values_score,
-        'allowed_data_types': allowed_data_types_score,
-        'timestamp_consistency': timestamp_consistency_score,
-        'logical_timestamps': logical_timestamp_score
+        'V1_1_Valid_Key_Names': attribute_keys_score,
+        'V1_2_Unique_Attribute_Keys': unique_keys_score,
+        'V2_1_Data_Type_to_Value_Conformance': attribute_values_score,
+        'V3_1_Allowed_Data_Types': allowed_data_types_score,
+        'V4_1_Consistent_Timestamp_Format': timestamp_consistency_score,
+        'V4_2_Logically_Valid_Timestamps': logical_timestamp_score
     }
 
     validity_score = sum(scores.values()) / len(scores)
 
     # Convert individual scores to percentages
     detailed_scores = {key: score for key, score in scores.items()}
-    detailed_scores['overall_validity_score'] = round(validity_score, 2)
+    detailed_scores['V0_Overall_Validity_Score'] = round(validity_score, 2)
 
     return detailed_scores
 
@@ -389,17 +402,17 @@ def assess_validity(file_path):
         logical_timestamp_issues = validate_timestamp_logical_constraints(file_path)
 
         results = {
-            'status': 'success',
-            'invalid_attribute_keys': invalid_attribute_keys,
-            'duplicate_attribute_keys': duplicate_attribute_keys,
-            'invalid_attribute_values': invalid_attribute_values,
-            'unsupported_data_types': unsupported_data_types,
-            'timestamp_inconsistency_in_trace': timestamp_consistency,
-            'logical_timestamp_issues': logical_timestamp_issues
+            'z_status': 'success',
+            'V1_1_Valid_Key_Names': invalid_attribute_keys,
+            'V1_2_Unique_Attribute_Keys': duplicate_attribute_keys,
+            'V2_1_Data_Type_to_Value_Conformance': invalid_attribute_values,
+            'V3_1_Allowed_Data_Types': unsupported_data_types,
+            'V4_1_Consistent_Timestamp_Format': timestamp_consistency,
+            'V4_2_Logically_Valid_Timestamps': logical_timestamp_issues
         }
 
         validity_scores = calculate_validity_score(results)
-        results['validity_scores'] = validity_scores
+        results['V0_Validity_Scores'] = validity_scores
 
         return results
     

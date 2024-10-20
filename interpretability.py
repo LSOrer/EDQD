@@ -13,7 +13,7 @@ def check_coarse_timestamps(log):
             if timestamp:
                 timestamp = datetime.fromisoformat(timestamp)
                 if not (timestamp.hour == 0 and timestamp.minute == 0 and timestamp.second == 0 and timestamp.microsecond == 0):
-                    return None               
+                    return "Timestamps are sufficiently granular for meaningful analysis"               
     return "Warning coarse timestamps! Only changes in days are recorded"
 
 
@@ -38,7 +38,7 @@ def check_coarse_org_values(log):
                 org_resource_present = True
 
     if org_resource_present:
-        return None
+        return "Resource information are sufficiently granular for meaningful analysis"
     elif org_group_present and not org_role_present:
         return "Coarse resource information: only org:group is recorded"
     elif org_role_present and not org_group_present:
@@ -105,20 +105,20 @@ def calculate_interpretability_score(results):
     """
     # Define weights for each assessment
     weights = {
-        'timestamp_coarseness': 0.3,
-        'resource_information': 0.3,
-        'activity_name_granularity': 0.4
+        'I1_1_Coarse_Timestamps': 0.3,
+        'I1_2_Coarse_Resources': 0.3,
+        'I1_3_Coarse_Activity_Names': 0.4
     }
 
     # Extract assessment results
-    coarse_timestamps = results.get('coarse_timestamps')
-    org_information = results.get('coarse_resource_information')
-    coarse_activity_name = results.get('coarse_activity_names', {})
+    coarse_timestamps = results.get('I1_1_Coarse_Timestamps', {}).get('Timestamp Coarseness')
+    org_information = results.get('I1_2_Coarse_Resources', {}).get('Resource Coarseness')
+    coarse_activity_name = results.get('I1_3_Coarse_Activity_Names', {})
 
     # Calculate individual scores
-    timestamp_coarseness_score = 100 if coarse_timestamps is None else 0
+    timestamp_coarseness_score = 100 if coarse_timestamps == "Timestamps are sufficiently granular for meaningful analysis" else 0
 
-    if org_information is None:
+    if org_information == "Resource information are sufficiently granular for meaningful analysis":
         resource_information_score = 100
     elif org_information == "Coarse resource information: only org:group is recorded" or org_information == "Coarse resource information: only org:role is recorded":
         resource_information_score = 50
@@ -131,19 +131,19 @@ def calculate_interpretability_score(results):
 
     # Calculate the weighted interpretability score
     interpretability_score = (
-        weights['timestamp_coarseness'] * timestamp_coarseness_score +
-        weights['resource_information'] * resource_information_score +
-        weights['activity_name_granularity'] * activity_name_granularity_score
+        weights['I1_1_Coarse_Timestamps'] * timestamp_coarseness_score +
+        weights['I1_2_Coarse_Resources'] * resource_information_score +
+        weights['I1_3_Coarse_Activity_Names'] * activity_name_granularity_score
     ) / 100
 
     interpretability_percentage = interpretability_score * 100
 
     # Convert individual scores to percentages
     detailed_scores = {
-        'timestamp_coarseness': timestamp_coarseness_score,
-        'resource_information': resource_information_score,
-        'activity_name_granularity': activity_name_granularity_score,
-        'overall_interpretability_score': interpretability_percentage
+        'I1_1_Coarse_Timestamps': timestamp_coarseness_score,
+        'I1_2_Coarse_Resources': resource_information_score,
+        'I1_3_Coarse_Activity_Names': activity_name_granularity_score,
+        'I0_Overall_Interpretability_Score': interpretability_percentage
     }
 
     return detailed_scores
@@ -157,18 +157,18 @@ def assess_interpretability(file_path):
         log = parse_xes(file_path)
 
         coarse_timestamps = check_coarse_timestamps(log)
-        org_information = check_coarse_org_values(log)
+        coarse_resources = check_coarse_org_values(log)
         coarse_activity_name = assess_activity_name_granularity(log)
 
         results = {
-            'status': 'success',
-            'coarse_timestamps': coarse_timestamps,
-            'coarse_resource_information': org_information,
-            'coarse_activity_names': coarse_activity_name
+            'z_status': 'success',
+            'I1_1_Coarse_Timestamps': {'Timestamp Coarseness': coarse_timestamps},
+            'I1_2_Coarse_Resources': {'Resource Coarseness': coarse_resources},
+            'I1_3_Coarse_Activity_Names': coarse_activity_name
         }
 
         interpretability_scores = calculate_interpretability_score(results)
-        results['interpretability_scores'] = interpretability_scores
+        results['I0_Interpretability_Scores'] = interpretability_scores
 
         return results
     

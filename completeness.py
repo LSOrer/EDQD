@@ -196,9 +196,8 @@ def check_unrecorded_events(log, time_gap_factor=300):
                     'message': f"Large gap between {gap_info['event1']} and {gap_info['event2']}, gap: {gap_info['gap']} seconds"
                 })
     
-    return {
-        "unusual_inter_event_time_gaps": event_time_gap_anomalies
-    }
+    return event_time_gap_anomalies
+    
 
 def find_orphan_events(file_path):
     """
@@ -235,7 +234,7 @@ def find_orphan_events(file_path):
 def find_disordered_traces(log):
     """
     Check if the events of each trace in the event log are ordered by their timestamps.
-    Returns a list of trace names where the event ordering is incorrect.
+    Returns a list of dictionaries with trace names and the specific disordered event names.
     """
     disordered_traces = []
 
@@ -247,28 +246,38 @@ def find_disordered_traces(log):
             timestamp_str = event.get('time:timestamp')
             if timestamp_str:
                 timestamp = datetime.fromisoformat(timestamp_str)
-                timestamps.append(timestamp)
+                timestamps.append((timestamp, event['concept:name']))  # Store timestamp and event name
 
         # Check if the list of timestamps is sorted
-        if timestamps != sorted(timestamps):
-            disordered_traces.append(trace_name)
+        sorted_timestamps = sorted(timestamps, key=lambda x: x[0])
+
+        # Identify disordered events by comparing original order with sorted order
+        disordered_events = [
+            event_name for (original, event_name), (sorted_, _) in zip(timestamps, sorted_timestamps) if original != sorted_
+        ]
+
+        if disordered_events:
+            disordered_traces.append({
+                'trace_name': trace_name,
+                'disordered_events': disordered_events
+            })
 
     return disordered_traces
 
 def calculate_completeness_score(results, max_counts):
     # Define weights for each essential assessment
     weights = {
-        'ordered_traces': 0.25,
-        'complete_traces': 0.25,
-        'present_attribute_values': 0.25,
-        'associated_events': 0.25
+        'C7_Disordered_Traces': 0.25,
+        'C2_Incomplete_Traces': 0.25,
+        'C1_Missing_Values': 0.25,
+        'C6_Orphan_Events': 0.25
     }
     
     # Extract assessment results
-    disordered_traces = results.get('disordered_traces', [])
-    incomplete_traces = results.get('incomplete_traces', [])
-    missing_attribute_values = results.get('missing_attribute_values', {})
-    orphan_events = results.get('orphan_events', [])
+    disordered_traces = results.get('C7_Disordered_Traces', [])
+    incomplete_traces = results.get('C2_Incomplete_Traces', [])
+    missing_attribute_values = results.get('C1_Missing_Values', {})
+    orphan_events = results.get('C6_Orphan_Events', [])
 
     # Calculate the number of issues in each category
     num_disordered_traces = len(disordered_traces)
@@ -278,10 +287,10 @@ def calculate_completeness_score(results, max_counts):
 
     # Normalize the counts to a score between 0 and 1
     scores = {
-        'ordered_traces': max(0, 1 - num_disordered_traces / max_counts['disordered_traces']),
-        'complete_traces': max(0, 1 - num_incomplete_traces / max_counts['incomplete_traces']),
-        'present_attribute_values': max(0, 1 - num_missing_values / max_counts['missing_attribute_values']),
-        'associated_events': max(0, 1 - num_orphan_events / max_counts['orphan_events'])
+        'C7_Disordered_Traces': max(0, 1 - 10 * num_disordered_traces / max_counts['C7_Disordered_Traces']),
+        'C2_Incomplete_Traces': max(0, 1 - 10 * num_incomplete_traces / max_counts['C2_Incomplete_Traces']),
+        'C1_Missing_Values': max(0, 1 - 10 * num_missing_values / max_counts['C1_Missing_Values']),
+        'C6_Orphan_Events': max(0, 1 - 10 * num_orphan_events / max_counts['C6_Orphan_Events'])
     }
 
     # Calculate the weighted completeness score
@@ -290,7 +299,7 @@ def calculate_completeness_score(results, max_counts):
     
     # Convert individual scores to percentages
     detailed_scores = {key: round(score * 100, 2) for key, score in scores.items()}
-    detailed_scores['overall_completeness_score'] = round(completeness_percentage, 2)
+    detailed_scores['C0_Overall_Completeness_Score'] = round(completeness_percentage, 2)
     
     return detailed_scores
 
@@ -328,26 +337,25 @@ def assess_completeness(file_path):
                 total_attributes += len(event)
         
         max_counts = {
-            'disordered_traces': len(log),
-            'incomplete_traces': len(log),
-            'missing_attribute_values': total_attributes,
-            'orphan_events': total_events
+            'C7_Disordered_Traces': len(log),
+            'C2_Incomplete_Traces': len(log),
+            'C1_Missing_Values': total_attributes,
+            'C6_Orphan_Events': total_events
         }
 
         results = {
-            'status': 'success',
-            'missing_attribute_values': missing_attribute_values,
-            'incomplete_traces': incomplete_traces,
-            'lifecycle_transition': lifecycle_transition_msg,
-            'org_resource': org_resource_msg,
-            'unrecorded_traces': unrecorded_traces,
-            'orphan_events': orphan_events,
-            'disordered_traces': disordered_traces,
-            'unrecorded_events': missing_events
+            'z_status': 'success',
+            'C1_Missing_Values': missing_attribute_values,
+            'C2_Incomplete_Traces': incomplete_traces,
+            'C3_Attribute_Presence': {'lifecycle_transition': lifecycle_transition_msg,'org_resource': org_resource_msg},
+            'C4_Unrecorded_Traces': unrecorded_traces,
+            'C6_Orphan_Events': orphan_events,
+            'C7_Disordered_Traces': disordered_traces,
+            'C5_Unrecorded_Events': missing_events
         }
 
         completeness_scores = calculate_completeness_score(results, max_counts)
-        results['completeness_scores'] = completeness_scores
+        results['C0_Completeness_Scores'] = completeness_scores
 
         return results
     

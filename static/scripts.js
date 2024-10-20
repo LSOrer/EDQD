@@ -33,62 +33,62 @@ function displayResults(data) {
     var qualityDimensions = [
         { 
             name: 'Completeness', 
-            score: data.Completeness?.completeness_scores?.overall_completeness_score || 0, 
+            score: data.Completeness?.C0_Completeness_Scores?.C0_Overall_Completeness_Score || 0, 
             details: data.Completeness,
-            status: data.Completeness.status,
-            subScores: data.Completeness.status === 'success' ? {
-                'C1 Missing Values': data.Completeness.completeness_scores.present_attribute_values,
-                'C2 Incomplete Traces': data.Completeness.completeness_scores.complete_traces,
-                'C4 Unrecorded Traces': (data.Completeness.unrecorded_traces.trace_pattern_anomalies.length === 0 && data.Completeness.unrecorded_traces.unusual_inter_trace_time_gaps.length === 0) ? 100 : 90,
-                'C5 Unrecorded Events': data.Completeness.unrecorded_events.unusual_inter_event_time_gaps.length === 0 ? 100 : 90,
-                'C6 Orphan Events': data.Completeness.completeness_scores.associated_events,
-                'C7 Disordered Traces': data.Completeness.completeness_scores.ordered_traces
+            status: data.Completeness.z_status,
+            subScores: data.Completeness.z_status === 'success' ? {
+                'C1 Missing Values': data.Completeness.C0_Completeness_Scores.C1_Missing_Values,
+                'C2 Incomplete Traces': data.Completeness.C0_Completeness_Scores.C2_Incomplete_Traces,
+                'C4 Unrecorded Traces': (data.Completeness.C4_Unrecorded_Traces.trace_pattern_anomalies.length === 0 && data.Completeness.C4_Unrecorded_Traces.unusual_inter_trace_time_gaps.length === 0) ? 100 : 90,
+                'C5 Unrecorded Events': data.Completeness.C5_Unrecorded_Events.length === 0 ? 100 : 90,
+                'C6 Orphan Events': data.Completeness.C0_Completeness_Scores.C6_Orphan_Events,
+                'C7 Disordered Traces': data.Completeness.C0_Completeness_Scores.C7_Disordered_Traces
             } : {}
         },
         { 
             name: 'Accuracy', 
-            score: data.Accuracy?.accuracy_scores?.overall_accuracy_score || 0, 
+            score: data.Accuracy?.A0_Accuracy_Scores?.A0_Overall_Accuracy_Score || 0, 
             details: data.Accuracy,
-            status: data.Accuracy.status,
-            subScores: data.Accuracy.status === 'success' ? {
-                'A1 Unrealistic Timestamps': data.Accuracy.accuracy_scores.timestamp_accuracy,
-                'A2 Trace belongs to a diffrent process': data.Accuracy.potential_traces_of_a_different_process.length === 0 ? 100 : 90,
-                'A3-1 Trace Duplicates': data.Accuracy.accuracy_scores.duplicate_traces,
-                'A3-2 Event Duplicates': data.Accuracy.accuracy_scores.duplicate_events
+            status: data.Accuracy.z_status,
+            subScores: data.Accuracy.z_status === 'success' ? {
+                'A1 Unrealistic Timestamps': data.Accuracy.A0_Accuracy_Scores.A1_Unrealistic_Timestamps,
+                'A2 Trace belongs to a diffrent process': data.Accuracy.A2_Trace_belongs_to_a_diffrent_process.length === 0 ? 100 : 90,
+                'A3-1 Trace Duplicates': data.Accuracy.A0_Accuracy_Scores.A3_1_Trace_Duplicates,
+                'A3-2 Event Duplicates': data.Accuracy.A0_Accuracy_Scores.A3_2_Event_Duplicates
             } : {}
         },
         { 
             name: 'Interpretability', 
-            score: data.Interpretability?.interpretability_scores?.overall_interpretability_score || 0, 
+            score: data.Interpretability?.I0_Interpretability_Scores?.I0_Overall_Interpretability_Score || 0, 
             details: data.Interpretability,
-            status: data.Interpretability.status,
-            subScores: data.Interpretability.status === 'success' ? {
-                'I1-1 Coarse Timestamps': data.Interpretability.interpretability_scores.timestamp_coarseness,
-                'I1-2 Coarse Resources': data.Interpretability.interpretability_scores.resource_information,
-                'I1-3 Coarse Activity Names': data.Interpretability.interpretability_scores.activity_name_granularity
+            status: data.Interpretability.z_status,
+            subScores: data.Interpretability.z_status === 'success' ? {
+                'I1-1 Coarse Timestamps': data.Interpretability.I0_Interpretability_Scores.I1_1_Coarse_Timestamps,
+                'I1-2 Coarse Resources': data.Interpretability.I0_Interpretability_Scores.I1_2_Coarse_Resources,
+                'I1-3 Coarse Activity Names': data.Interpretability.I0_Interpretability_Scores.I1_3_Coarse_Activity_Names
             } : {}
         },
         { 
             name: 'Relevancy', 
-            score: data.Relavency?.overall_relevancy_score || 0, 
+            score: data.Relavency?.R0_Relevancy_Scores?.R0_Overall_Relevancy_Score || 0, 
             details: data.Relavency,
-            status: data.Relavency.status,
-            subScores: data.Relavency.status === 'success' ? {
-                'R1-1 Noise Events': data.Relavency.overall_relevancy_score
+            status: data.Relavency.z_status,
+            subScores: data.Relavency.z_status === 'success' ? {
+                'R1-1 Noise Events': data.Relavency.R0_Relevancy_Scores.R1_1_Noise_Events
             } : {}
         },
         { 
             name: 'Validity', 
-            score: data.Validity?.validity_scores?.overall_validity_score || 0, 
+            score: data.Validity?.V0_Validity_Scores?.V0_Overall_Validity_Score || 0, 
             details: data.Validity,
-            status: data.Validity.status,
-            subScores: data.Validity.status === 'success' ? {
-                'V1-1 Valid Key Name': data.Validity.validity_scores.valid_attribute_keys,
-                'V1-2 Unique Attribute Keys': data.Validity.validity_scores.unique_keys,
-                'V2-1 Data Type to Value Conformance': data.Validity.validity_scores.valid_attribute_values,
-                'V3-1 Allowed Data Types': data.Validity.validity_scores.allowed_data_types,
-                'V4-1 Consistent Timestamp Format': data.Validity.validity_scores.timestamp_consistency,
-                'V4-2 Logically Valid Timestamps': data.Validity.validity_scores.logical_timestamps
+            status: data.Validity.z_status,
+            subScores: data.Validity.z_status === 'success' ? {
+                'V1-1 Valid Key Name': data.Validity.V0_Validity_Scores.V1_1_Valid_Key_Names,
+                'V1-2 Unique Attribute Keys': data.Validity.V0_Validity_Scores.V1_2_Unique_Attribute_Keys,
+                'V2-1 Data Type to Value Conformance': data.Validity.V0_Validity_Scores.V2_1_Data_Type_to_Value_Conformance,
+                'V3-1 Allowed Data Types': data.Validity.V0_Validity_Scores.V3_1_Allowed_Data_Types,
+                'V4-1 Consistent Timestamp Format': data.Validity.V0_Validity_Scores.V4_1_Consistent_Timestamp_Format,
+                'V4-2 Logically Valid Timestamps': data.Validity.V0_Validity_Scores.V4_2_Logically_Valid_Timestamps
             } : {}
         }
     ];

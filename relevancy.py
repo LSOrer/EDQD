@@ -35,7 +35,7 @@ def calculate_relevancy_score(results, total_events):
 
     # Calculate the relevancy score
     relevancy_score = max(0, (1 - 10 * num_noise_events / total_events) * 100)
-    
+
     return relevancy_score
 
 def assess_relevancy(file_path):
@@ -51,11 +51,13 @@ def assess_relevancy(file_path):
         total_events = sum(len(trace.get('events', [])) for trace in log)
         relevancy_score = round(calculate_relevancy_score({'noise_events': noise_events}, total_events), 2)
 
-        return {
-            'status': 'success',
-            'noise_events': noise_events,
-            'overall_relevancy_score': relevancy_score
+        results = {
+            'z_status': 'success',
+            'R1_1_Noise_Events': noise_events,
+            'R0_Relevancy_Scores': {'R0_Overall_Relevancy_Score': relevancy_score, 'R1_1_Noise_Events': relevancy_score}            
         }
+
+        return results
     
     except Exception as e:
         return {
