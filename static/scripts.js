@@ -166,15 +166,15 @@ function displayResults(data) {
         <h3>Legend</h3>
         <div class="legend-item">
             <div class="legend-color green-main"></div>
-            <span>High Score (100%) - Your event log meets the highest quality standards.</span>
+            <span>High Score - Your event log meets all requirements of the assessments.</span>
         </div>
         <div class="legend-item">
             <div class="legend-color yellow-main"></div>
-            <span>Medium Score (80%-99%) - Caution advised, potential issues detected. Please review the 'Details' section.</span>
+            <span>Medium Score - Caution advised, potential issues detected. Please review the 'Details' section.</span>
         </div>
         <div class="legend-item">
             <div class="legend-color red-main"></div>
-            <span>Low Score (below 80%) - Significant issues detected in your event log.</span>
+            <span>Low Score - Significant issues detected in your event log.</span>
         </div>
         <div class="legend-item">
             <div class="legend-color grey-main"></div>
