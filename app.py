@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template, jsonify
+from flask import Flask, request, redirect, render_template, jsonify, url_for
 import os
 from werkzeug.utils import secure_filename
 
@@ -12,14 +12,22 @@ import validity
 app = Flask(__name__)
 
 # Configurations for local usage
-#UPLOAD_FOLDER = '/directory_of_this_code/logs'
+UPLOAD_FOLDER = '/Users/babettebaier/Desktop/EDQD/logs'
 
 # Configurations for Docker usage
-UPLOAD_FOLDER = '/app/uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Ensure the directory exists
+#UPLOAD_FOLDER = '/app/uploads'
+#os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Ensure the directory exists
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 ALLOWED_EXTENSIONS = {'xes'}
+
+# Store thresholds in memory (initial default values)
+thresholds = {
+    "green_main": 100,
+    "yellow_main": 80,
+    "green_small": 100,
+    "yellow_small": 80
+}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -56,6 +64,24 @@ def upload_file():
 
     return redirect(request.url)
 
+# Route to display threshold settings page
+@app.route('/thresholds', methods=['GET'])
+def thresholds_page():
+    return render_template('thresholds.html', thresholds=thresholds)
+
+# Route to update threshold values
+@app.route('/set_thresholds', methods=['POST'])
+def set_thresholds():
+    thresholds['green_main'] = int(request.form.get('green_main', 100))
+    thresholds['yellow_main'] = int(request.form.get('yellow_main', 80))
+    thresholds['green_small'] = int(request.form.get('green_small', 100))
+    thresholds['yellow_small'] = int(request.form.get('yellow_small', 80))
+    return redirect(url_for('index'))  # Redirect to main page after saving
+
+@app.route('/get_thresholds', methods=['GET'])
+def get_thresholds():
+    return jsonify(thresholds)
+
 if __name__ == '__main__':
-    #app.run(debug=True)
-    app.run(host="0.0.0.0", port=80, debug=True)
+    app.run(debug=True)
+    #app.run(host="0.0.0.0", port=80, debug=True)

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Set Thresholds</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+</head>
+<body>
+    <h1>Set Color Thresholds</h1>
+    <form action="{{ url_for('set_thresholds') }}" method="post">
+        <label for="green_main">Green Threshold (main):</label>
+        <input type="number" name="green_main" id="green_main" value="{{ thresholds.green_main }}" min="0" max="100">%
+        <br>
+
+        <label for="yellow_main">Yellow Threshold (main):</label>
+        <input type="number" name="yellow_main" id="yellow_main" value="{{ thresholds.yellow_main }}" min="0" max="100">%
+        <br><br>
+
+        <label for="green_small">Green Threshold (small):</label>
+        <input type="number" name="green_small" id="green_small" value="{{ thresholds.green_small }}" min="0" max="100">%
+        <br>
+
+        <label for="yellow_small">Yellow Threshold (small):</label>
+        <input type="number" name="yellow_small" id="yellow_small" value="{{ thresholds.yellow_small }}" min="0" max="100">%
+        <br><br>
+
+        <button type="submit">Save Thresholds</button>
+    </form>
+    <a href="{{ url_for('index') }}">Back to Main Page</a>
+</body>
+</html>

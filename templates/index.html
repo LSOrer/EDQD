@@ -6,11 +6,10 @@
         <title>EDQD</title>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
         <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+        <link rel="icon" href="{{ url_for('static', filename='edqd_icon.png') }}" type="image/png">
     </head>
     <body>
-        <center>
-            <h3>Upload Event Log</h3>
-        </center>
+        <h3 class="center-text">Upload Event Log</h3>
         <div class="upload-container">
             <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
                 <label for="file-upload" class="custom-file-upload">
@@ -22,11 +21,13 @@
             </form>
         </div>
         
+        <!-- Loading animation -->
         <div id="loading" class="loading" style="display: none;">
             <div class="spinner"></div>
             <p>Processing your event log, please wait...</p>
         </div>
 
+        <!-- Results Section -->
         <div id="results" class="container"></div>
 
         <!-- Modal for detailed information -->
@@ -35,17 +36,6 @@
                 <span class="close">&times;</span>
                 <h2>Detailed Information</h2>
                 <div id="modalContent">
-                    <!-- Example: Multiple Collapsible Sections with Scrollable Lists -->
-                    <div class="collapsible-section">
-                        <h3>Unrecorded Events</h3>
-                        <div class="collapsible-content">
-                            <ul class="data-list">
-                                <!-- Dynamically populate the list -->
-                            </ul>
-                            <button class="toggle-button">Show More</button>
-                        </div>
-                    </div>
-                    
                     <div class="collapsible-section">
                         <h3>Other Large Dataset</h3>
                         <div class="collapsible-content">
@@ -57,7 +47,13 @@
                     </div>
                 </div>
             </div>
-        <script src="{{ url_for('static', filename='scripts.js') }}">
-        </script>
+        </div>
+
+        <!-- Footer Section -->
+        <footer style="text-align: center; margin-top: 20px; font-size: 0.9em;">
+            <p>Need to adjust the threshold values? <a href="/thresholds" style="color: #1A73E8; text-decoration: underline;">Click here</a></p>
+        </footer>
+
+        <script src="{{ url_for('static', filename='scripts.js') }}"></script>
     </body>
 </html>

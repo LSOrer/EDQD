@@ -162,19 +162,23 @@ function displayResults(data) {
 
     var legendDiv = document.createElement('div');
     legendDiv.className = 'color-legend';
+
+    const greenThreshold = thresholds.green_main || 100; // Default to 100 if undefined
+    const yellowThreshold = thresholds.yellow_main || 80; // Default to 80 if undefined
+
     legendDiv.innerHTML = `
         <h3>Legend</h3>
         <div class="legend-item">
             <div class="legend-color green-main"></div>
-            <span>High Score - Your event log meets all requirements of the assessments.</span>
+            <span>High Score (${greenThreshold}% and above) - Your event log meets all requirements of the assessments.</span>
         </div>
         <div class="legend-item">
             <div class="legend-color yellow-main"></div>
-            <span>Medium Score - Caution advised, potential issues detected. Please review the 'Details' section.</span>
+            <span>Medium Score (${yellowThreshold}% to ${greenThreshold - 1}%) - Caution advised, potential issues detected. Please review the 'Details' section.</span>
         </div>
         <div class="legend-item">
             <div class="legend-color red-main"></div>
-            <span>Low Score - Significant issues detected in your event log.</span>
+            <span>Low Score (below ${yellowThreshold}%) - Significant issues detected in your event log.</span>
         </div>
         <div class="legend-item">
             <div class="legend-color grey-main"></div>
@@ -187,16 +191,29 @@ function displayResults(data) {
 
 }
 
+// Global variable to store threshold values
+let thresholds = {};
+
+// Fetch thresholds from the server on page load
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('/get_thresholds')
+        .then(response => response.json())
+        .then(data => {
+            thresholds = data; // Store the fetched thresholds
+        })
+        .catch(error => console.error('Error fetching thresholds:', error));
+});
+
+// Update getColorClass to use dynamic thresholds
 function getColorClass(score, type) {
-    if (type === 'main') {
-        if (score === 100) return 'green-main';
-        if (score >= 80) return 'yellow-main';
-        return 'red-main';
-    } else {
-        if (score === 100) return 'green-small';
-        if (score >= 80) return 'yellow-small';
-        return 'red-small';
-    }
+    // Ensure thresholds have been fetched before using them
+    const greenThreshold = type === 'main' ? thresholds.green_main : thresholds.green_small;
+    const yellowThreshold = type === 'main' ? thresholds.yellow_main : thresholds.yellow_small;
+
+    // Apply color based on fetched thresholds
+    if (score >= greenThreshold) return type === 'main' ? 'green-main' : 'green-small';
+    if (score >= yellowThreshold) return type === 'main' ? 'yellow-main' : 'yellow-small';
+    return type === 'main' ? 'red-main' : 'red-small';
 }
 
 // Modal functionality
