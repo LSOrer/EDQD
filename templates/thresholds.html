@@ -2,30 +2,68 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Set Thresholds</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <link rel="stylesheet" href="{{ url_for('static', filename='thresholds.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='edqd_icon.png') }}" type="image/png">
 </head>
 <body>
-    <h1>Set Color Thresholds</h1>
-    <form action="{{ url_for('set_thresholds') }}" method="post">
-        <label for="green_main">Green Threshold (main):</label>
-        <input type="number" name="green_main" id="green_main" value="{{ thresholds.green_main }}" min="0" max="100">%
-        <br>
+    <h1 class="center-text">Threshold Settings</h1>
 
-        <label for="yellow_main">Yellow Threshold (main):</label>
-        <input type="number" name="yellow_main" id="yellow_main" value="{{ thresholds.yellow_main }}" min="0" max="100">%
-        <br><br>
+    <div class="container">
+        <form action="{{ url_for('set_thresholds') }}" method="post">
+            <!-- Color Thresholds Section -->
+            <div class="section">
+                <h2>Quality Dimension Color Thresholds</h2>
+                <label for="green_main">Green Threshold in % (big box):</label>
+                <p class="hint">Up to this percentage value the box is displayed in green. Below this value it is shown as yellow.</p>
+                <input type="number" name="green_main" id="green_main" value="{{ thresholds.green_main }}" min="20" max="100">
+                
+                <label for="yellow_main">Yellow Threshold in % (big box):</label>
+                <p class="hint">Up to this percentage value the box is displayed in yellow. Below this value it is shown as red.</p>
+                <input type="number" name="yellow_main" id="yellow_main" value="{{ thresholds.yellow_main }}" min="10" max="100">
+            </div>
 
-        <label for="green_small">Green Threshold (small):</label>
-        <input type="number" name="green_small" id="green_small" value="{{ thresholds.green_small }}" min="0" max="100">%
-        <br>
+            <!-- Small Box Color Thresholds Section -->
+            <div class="section">
+                <h2>Assessment Color Thresholds</h2>
+                <label for="green_small">Green Threshold in % (small box):</label>
+                <p class="hint">Up to this percentage value the box is displayed in green. Below this value it is shown as yellow.</p>
+                <input type="number" name="green_small" id="green_small" value="{{ thresholds.green_small }}" min="20" max="100">
+                
+                <label for="yellow_small">Yellow Threshold in % (small box):</label>
+                <p class="hint">Up to this percentage value the box is displayed in yellow. Below this value it is shown as red.</p>
+                <input type="number" name="yellow_small" id="yellow_small" value="{{ thresholds.yellow_small }}" min="10" max="100">
+            </div>
 
-        <label for="yellow_small">Yellow Threshold (small):</label>
-        <input type="number" name="yellow_small" id="yellow_small" value="{{ thresholds.yellow_small }}" min="0" max="100">%
-        <br><br>
+            <!-- Function Thresholds Section -->
+            <div class="section">
+                <h2>Function-Specific Thresholds</h2>
+                <p class="hint">The lower the value, the more sensitive it reacts to anomalies. Decimal values are allowed. </p>
+                <label for="pattern-threshold">Pattern Threshold:</label>
+                <p class="hint">Adjust sensitivity to trace pattern anomalies.</p>
+                <input type="number" id="pattern-threshold" name="pattern_threshold" value="{{ thresholds['pattern_threshold'] or 8 }}" min="0.1" step="0.1">
 
-        <button type="submit">Save Thresholds</button>
-    </form>
-    <a href="{{ url_for('index') }}">Back to Main Page</a>
+
+                <label for="time-gap-factor-traces">Time Gap Factor (Traces):</label>
+                <p class="hint">Sets the threshold for identifying large time gaps between traces.</p>
+                <input type="number" id="time-gap-factor-traces" name="time_gap_factor_traces" value="{{ thresholds['time_gap_factor_traces'] or 20 }}" min="0.1" step="0.1">
+
+
+                <label for="time-gap-factor-events">Time Gap Factor (Events):</label>
+                <p class="hint">Sets the threshold for identifying large time gaps between events within traces.</p>
+                <input type="number" id="time-gap-factor-events" name="time_gap_factor_events" value="{{ thresholds['time_gap_factor_events'] or 20 }}" min="0.1" step="0.1">
+            </div>
+
+            <!-- Submit Button -->
+            <div class="center-text">
+                <button type="submit" class="submit-btn">Save Thresholds</button>
+            </div>
+        </form>
+        <div class="center-text">
+            <a href="{{ url_for('index') }}" class="back-link">Back to Main Page</a>
+        </div>
+    </div>
 </body>
 </html>

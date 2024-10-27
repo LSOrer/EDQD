@@ -186,7 +186,7 @@ function displayResults(data) {
         </div>
     `;
 
-    // Append the single legend at the end of all the dimension boxes
+    // Append the legend at the end of all the dimension boxes
     resultsDiv.appendChild(legendDiv);
 
 }

@@ -1,6 +1,6 @@
 from datetime import datetime
 from xes_parser import parse_xes 
-import xml.etree.ElementTree as ET
+from lxml import etree as ET
 
 def is_missing_value(value):
     """
@@ -77,7 +77,7 @@ def check_attribute_presence(log, attribute_name):
                 return True
     return False
 
-def check_unrecorded_traces(log, pattern_threshold=1, time_gap_factor=2):
+def check_unrecorded_traces(log, pattern_threshold, time_gap_factor_traces):
     """
     Check for possible unrecorded traces using pattern analysis and inter trace time gap analysis.
     pattern_threshold: threshold for detecting significant deviations in trace length (the lower the more sensitive)
@@ -138,7 +138,7 @@ def check_unrecorded_traces(log, pattern_threshold=1, time_gap_factor=2):
     pattern_missing_indices = analyze_trace_patterns(log, pattern_threshold)
 
     # Perform inter trace time gap analysis
-    trace_time_gap_anomalies = analyze_inter_trace_gaps(log, time_gap_factor)
+    trace_time_gap_anomalies = analyze_inter_trace_gaps(log, time_gap_factor_traces)
 
     # Identify trace names and the number of events in the traces for the results
     pattern_anomalies = []
@@ -159,7 +159,7 @@ def check_unrecorded_traces(log, pattern_threshold=1, time_gap_factor=2):
     return potential_unrecorded_traces
 
 
-def check_unrecorded_events(log, time_gap_factor=300):
+def check_unrecorded_events(log, time_gap_factor_events):
     """
     Check for possible unrecorded events using time gap analysis.
     time_gap_factor: factor to determine significant time gaps (the lower the more sensitive)
@@ -187,7 +187,7 @@ def check_unrecorded_events(log, time_gap_factor=300):
     # Analyze each trace
     for trace in log:
         trace_name = trace['attributes'].get('concept:name', 'Unnamed trace')
-        significant_gaps = analyze_event_time_gaps(trace, time_gap_factor)
+        significant_gaps = analyze_event_time_gaps(trace, time_gap_factor_events)
         
         if significant_gaps:
             for gap_info in significant_gaps:
@@ -303,7 +303,7 @@ def calculate_completeness_score(results, max_counts):
     
     return detailed_scores
 
-def assess_completeness(file_path):
+def assess_completeness(file_path, thresholds):
     """
     Assess the completeness of the XES log.
     Returns a dictionary with the assessment results.
@@ -311,12 +311,17 @@ def assess_completeness(file_path):
     try:
         log = parse_xes(file_path)
 
+        # Extract dynamic threshold values
+        pattern_threshold = thresholds.get('pattern_threshold', 1)
+        time_gap_factor_traces = thresholds.get('time_gap_factor_traces', 2)
+        time_gap_factor_events = thresholds.get('time_gap_factor_events', 3)
+
         missing_attribute_values = check_missing_attribute_values(log)
         incomplete_traces = check_incomplete_traces(log)
-        unrecorded_traces = check_unrecorded_traces(log)
+        unrecorded_traces = check_unrecorded_traces(log, pattern_threshold, time_gap_factor_traces)
         orphan_events = find_orphan_events(file_path)
         disordered_traces = find_disordered_traces(log)
-        missing_events = check_unrecorded_events(log)
+        missing_events = check_unrecorded_events(log, time_gap_factor_events)
 
 
         # Check for lifecycle:transition and org:resource attributes

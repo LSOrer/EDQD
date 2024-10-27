@@ -1,0 +1,86 @@
+body {
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Container for the form */
+.container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center; /* Center-aligns content */
+}
+
+/* Section styling */
+.section {
+    background-color: #f9f9f9;
+    padding: 20px;
+    margin: 15px auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Section header styling */
+.section h2 {
+    font-size: 1.2em;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+/* Labels */
+.section label {
+    display: block;
+    margin: 8px 0 4px;
+    font-weight: bold;
+}
+
+/* Input fields */
+.section input {
+    width: 15%; /* Reduced width */
+    padding: 8px;
+    margin: 0 auto 10px; /* Center and space out inputs */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1em;
+    display: block; /* Center-aligns the input within the container */
+}
+
+/* Hint text */
+.hint {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+/* Submit Button */
+.submit-btn {
+    background-color: #388E3C;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin: 0 auto; /* Centers the button */
+    display: block;
+}
+
+.submit-btn:hover {
+    background-color: #2e7d32;
+}
+
+/* Centered text and link styling */
+.center-text {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.back-link {
+    color: #1A73E8;
+    font-size: 1em;
+    text-decoration: none;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}

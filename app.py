@@ -12,11 +12,11 @@ import validity
 app = Flask(__name__)
 
 # Configurations for local usage
-UPLOAD_FOLDER = '/Users/babettebaier/Desktop/EDQD/logs'
+#UPLOAD_FOLDER = '/your-file-path'
 
 # Configurations for Docker usage
-#UPLOAD_FOLDER = '/app/uploads'
-#os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Ensure the directory exists
+UPLOAD_FOLDER = '/app/uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Ensure the directory exists
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 ALLOWED_EXTENSIONS = {'xes'}
@@ -26,7 +26,10 @@ thresholds = {
     "green_main": 100,
     "yellow_main": 80,
     "green_small": 100,
-    "yellow_small": 80
+    "yellow_small": 80,
+    "pattern_threshold": 1,
+    "time_gap_factor_events": 3,
+    "time_gap_factor_traces": 2
 }
 
 def allowed_file(filename):
@@ -50,7 +53,7 @@ def upload_file():
 
         # Assess the data quality dimensions of the uploaded file
         results = {
-            'Completeness' : completeness.assess_completeness(file_path),
+            'Completeness' : completeness.assess_completeness(file_path, thresholds),
             'Accuracy' : accuracy.assess_accuracy(file_path),
             'Interpretability': interpretability.assess_interpretability(file_path),
             'Relavency': relevancy.assess_relevancy(file_path),
@@ -76,6 +79,10 @@ def set_thresholds():
     thresholds['yellow_main'] = int(request.form.get('yellow_main', 80))
     thresholds['green_small'] = int(request.form.get('green_small', 100))
     thresholds['yellow_small'] = int(request.form.get('yellow_small', 80))
+
+    thresholds['pattern_threshold'] = float(request.form.get('pattern_threshold', 1))
+    thresholds['time_gap_factor_events'] = float(request.form.get('time_gap_factor_events', 3))
+    thresholds['time_gap_factor_traces'] = float(request.form.get('time_gap_factor_traces', 2))
     return redirect(url_for('index'))  # Redirect to main page after saving
 
 @app.route('/get_thresholds', methods=['GET'])
